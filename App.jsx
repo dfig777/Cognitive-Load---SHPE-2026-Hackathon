@@ -4,7 +4,7 @@ import { useMsal, useIsAuthenticated } from '@azure/msal-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { prefsActions } from './store'
 import { fetchPreferences } from './utils/api'
-import { loginRequest } from './authConfig'
+import { loginRequest, DEBUG_MODE } from './authConfig'
 import Decomposer from './components/Decomposer'
 import Refactor from './components/Refactor'
 import PreferenceDashboard from './components/PreferenceDashboard'
@@ -34,7 +34,8 @@ export default function App() {
   const dispatch = useDispatch()
   const prefs = useSelector(s => s.prefs)
   const { instance } = useMsal()
-  const isAuthenticated = useIsAuthenticated()
+  const msalAuthenticated = useIsAuthenticated()
+  const isAuthenticated = DEBUG_MODE || msalAuthenticated
 
   // Load preferences from Cosmos once authenticated
   useEffect(() => {
