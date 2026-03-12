@@ -1,0 +1,339 @@
+/* NeuroFocus — Global Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+/* OpenDyslexic via CDN */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff');
+  font-weight: 700;
+}
+
+/* Atkinson Hyperlegible */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+
+/* ── CSS Custom Properties ─────────────────────────────────────────────── */
+
+:root {
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
+  --line-height: 1.6;
+  --letter-spacing: 0em;
+
+  /* Calm (default) theme */
+  --bg: #F7F5F2;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #EDE9E3;
+  --text-primary: #2C2B28;
+  --text-secondary: #6B6860;
+  --text-muted: #9C9A95;
+  --accent: #5B7FA6;
+  --accent-soft: #D6E4F0;
+  --accent-2: #7BAF8A;
+  --accent-2-soft: #D8EDE0;
+  --border: #E0DDD8;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+[data-theme="dark"] {
+  --bg: #1A1918;
+  --bg-card: #242320;
+  --bg-sidebar: #1F1E1C;
+  --text-primary: #E8E6E2;
+  --text-secondary: #A8A6A0;
+  --text-muted: #6B6860;
+  --accent: #7BA7CC;
+  --accent-soft: #1E2E3D;
+  --accent-2: #7BAF8A;
+  --accent-2-soft: #1A2B1E;
+  --border: #2E2D2A;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+[data-theme="high-contrast"] {
+  --bg: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #F0F0F0;
+  --text-primary: #000000;
+  --text-secondary: #222222;
+  --text-muted: #444444;
+  --accent: #0043CE;
+  --accent-soft: #EBF0FF;
+  --accent-2: #006B40;
+  --accent-2-soft: #E0F4EC;
+  --border: #000000;
+}
+
+/* ── Font switching ─────────────────────────────────────────────────────── */
+
+[data-font="opendyslexic"] { --font-body: 'OpenDyslexic', sans-serif; }
+[data-font="atkinson"]     { --font-body: 'Atkinson Hyperlegible', sans-serif; }
+
+/* ── Base reset ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: var(--line-height);
+  letter-spacing: var(--letter-spacing);
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+input, textarea {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 0.65rem 1rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  width: 100%;
+}
+input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1.25rem;
+  overflow-y: auto;
+  transition: transform var(--transition), opacity var(--transition), width var(--transition);
+}
+.sidebar.hidden {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: color-mix(in srgb, var(--accent) 85%, black); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+/* ── Timer ring ──────────────────────────────────────────────────────────── */
+.timer-ring { transform: rotate(-90deg); }
+.timer-ring circle { fill: none; transition: stroke-dashoffset 1s linear; }
+
+/* ── Checklist ───────────────────────────────────────────────────────────── */
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  margin-bottom: 0.6rem;
+  background: var(--bg-card);
+  transition: border-color var(--transition), background var(--transition);
+}
+.step-item.done {
+  background: var(--accent-2-soft);
+  border-color: var(--accent-2);
+  opacity: 0.75;
+}
+.step-item.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.step-checkbox {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: var(--bg);
+}
+.step-checkbox.checked {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: white;
+}
+
+/* ── Streaming text ──────────────────────────────────────────────────────── */
+.streaming-cursor::after {
+  content: '▋';
+  animation: blink 1s step-end infinite;
+  color: var(--accent);
+  margin-left: 1px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1 } 50% { opacity: 0 }
+}
+
+/* ── Slider ──────────────────────────────────────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+
+/* ── Toggle switch ───────────────────────────────────────────────────────── */
+.toggle { position: relative; display: inline-block; width: 40px; height: 22px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: 99px;
+  transition: background var(--transition);
+  cursor: pointer;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 16px; width: 16px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--transition);
+}
+.toggle input:checked ~ .toggle-slider { background: var(--accent); }
+.toggle input:checked ~ .toggle-slider::before { transform: translateX(18px); }
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.tooltip-wrapper { position: relative; display: inline; }
+.tooltip-box {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--bg);
+  font-size: 0.78rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  max-width: 260px;
+  white-space: normal;
+  z-index: 999;
+  pointer-events: none;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────────────── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover { background: var(--accent-soft); color: var(--accent); }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); }
