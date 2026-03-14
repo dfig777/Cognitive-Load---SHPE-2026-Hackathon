@@ -28,7 +28,8 @@ That's how the whole team (and Claude) stays in sync. Don't rely on memory or Sl
 - Content Safety middleware with cognitive pressure detection (DONE)
 - Blob Storage + Document Intelligence upload pipeline (DONE)
 - Full backend security and crash bug audit completed (DONE) — 10 issues fixed across all 7 backend files
-- Next: Application Insights, then Key Vault
+- Application Insights / Azure Monitor integration (DONE) — monitoring.py, configure_monitoring() called before FastAPI(), 4 custom events tracked (task_decomposed, document_uploaded, session_created, content_safety_flagged), graceful degradation, AIService.close() added and wired into lifespan
+- Next: Key Vault
 - Monday: Team alignment, Foundry evaluation, frontend work begins
 
 ## Product Identity
@@ -75,7 +76,7 @@ Warm and soft by default. The app should feel like a quiet room.
 4. **Azure AI Document Intelligence** — BUILT. prebuilt-read model. Magic byte validation (prevents spoofed file types). Empty text detection. Handles PDF, DOCX, DOC, PNG, JPG, TIFF.
 5. **Azure Blob Storage** — BUILT. User-scoped paths ({user_id}/{uuid}/{filename}). Sanitized filenames. Container created once at startup. Archival only — extraction runs from raw bytes.
 6. **Azure App Service** — Hosts backend + frontend. Managed identity for Key Vault.
-7. **Azure Monitor / App Insights** — Custom accessibility metrics: simplification ratio, time-to-focus, task completion rates, energy patterns. OpenTelemetry.
+7. **Azure Monitor / App Insights** — BUILT. monitoring.py wraps azure-monitor-opentelemetry. configure_monitoring() bootstraps OTel before FastAPI() so all HTTP + outbound calls (OpenAI, Cosmos) are auto-instrumented. 4 custom events: task_decomposed (granularity, step_count), document_uploaded (page_count, content_type, blob_stored), session_created (step_count), content_safety_flagged (category, path). track_event() uses OTel spans → customEvents in App Insights portal, queryable via KQL. Idempotent — safe to call multiple times. Graceful degradation if APP_INSIGHTS_CONNECTION_STRING not set.
 8. **Azure Key Vault** — All secrets. Managed identity access from App Service.
 
 ## API Endpoints
@@ -108,6 +109,7 @@ backend/
 ├── content_safety.py        ← Content Safety middleware + cognitive pressure policy
 ├── blob_service.py          ← Blob Storage upload
 ├── doc_intelligence.py      ← Document Intelligence extraction
+├── monitoring.py            ← Azure Monitor / Application Insights integration
 ├── requirements.txt
 └── .env.example
 ```

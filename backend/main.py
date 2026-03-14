@@ -18,6 +18,7 @@ from config import Settings, get_settings
 from content_safety import ContentSafetyFlagged, ContentSafetyService
 from db import CosmosRepo
 from doc_intelligence import MAX_FILE_BYTES, DocIntelligenceService, SUPPORTED_TYPES
+from monitoring import configure_monitoring, track_event
 from models import (
     DecomposeRequest,
     DecomposeResponse,
@@ -45,6 +46,10 @@ async def get_user_id(x_user_id: str = Header(default="default-user")) -> str:
 
 def make_app(settings: Settings | None = None) -> FastAPI:
     cfg = settings or get_settings()
+
+    # Must run before FastAPI() so the OTel SDK instruments the app from the start
+    configure_monitoring(cfg.app_insights_connection_string)
+
     repo = CosmosRepo(cfg)
     ai = AIService(cfg)
     safety = ContentSafetyService(cfg.content_safety_endpoint, cfg.content_safety_key)
@@ -56,6 +61,7 @@ def make_app(settings: Settings | None = None) -> FastAPI:
         await repo._ensure_containers()
         await blob.ensure_container()   # create blob container once at startup
         yield
+        await ai.close()
         await repo.close()
         await safety.close()
         await blob.close()
@@ -83,6 +89,10 @@ def make_app(settings: Settings | None = None) -> FastAPI:
 
     @app.exception_handler(ContentSafetyFlagged)
     async def content_safety_handler(request: Request, exc: ContentSafetyFlagged):
+        track_event("content_safety_flagged", {
+            "category": exc.category,
+            "path": request.url.path,
+        })
         return JSONResponse(
             status_code=200,
             content={
@@ -146,6 +156,11 @@ def make_app(settings: Settings | None = None) -> FastAPI:
         )
         await safety.screen_output(output_text)
 
+        track_event("task_decomposed", {
+            "granularity": req.granularity,
+            "step_count": len(steps),
+            "user_id": user_id,
+        })
         return DecomposeResponse(steps=steps)
 
     # ── Summarise (streaming SSE) ────────────────────────────────────────── #
@@ -293,6 +308,12 @@ def make_app(settings: Settings | None = None) -> FastAPI:
                     extra={"event": "blob_upload_failed", "error": str(exc)},
                 )
 
+        track_event("document_uploaded", {
+            "page_count": page_count,
+            "content_type": file.content_type,
+            "blob_stored": blob_name is not None,
+            "user_id": user_id,
+        })
         return UploadResponse(
             extracted_text=extracted_text,
             page_count=page_count,
@@ -308,6 +329,10 @@ def make_app(settings: Settings | None = None) -> FastAPI:
         user_id: str = Depends(get_user_id),
     ):
         doc = await repo.create_session(user_id, body.model_dump())
+        track_event("session_created", {
+            "step_count": len(body.steps),
+            "user_id": user_id,
+        })
         return SessionItem(
             id=doc["id"],
             goal=doc["goal"],

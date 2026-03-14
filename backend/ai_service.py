@@ -158,3 +158,7 @@ class AIService:
             ],
         )
         return resp.choices[0].message.content.strip()
+
+    async def close(self) -> None:
+        """Release the underlying HTTP connection pool."""
+        await self._client.close()

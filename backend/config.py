@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     doc_intelligence_endpoint: Optional[str] = None
     doc_intelligence_key: Optional[str] = None
 
+    # Azure Monitor / Application Insights (optional — telemetry skipped if not set)
+    app_insights_connection_string: Optional[str] = None
+
     # App
     allowed_origins: str = "http://localhost:5173"
 
