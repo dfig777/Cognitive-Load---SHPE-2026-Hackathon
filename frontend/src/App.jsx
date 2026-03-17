@@ -1,96 +1,84 @@
 import { useEffect } from 'react'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
-import { motion, AnimatePresence } from 'framer-motion'
 import { prefsActions } from './store'
 import { fetchPreferences } from './utils/api'
-import Decomposer from './components/Decomposer'
-import Refactor from './components/Refactor'
-import PreferenceDashboard from './components/PreferenceDashboard'
+import TopNav from './components/TopNav'
+import Home from './pages/Home'
+import Documents from './pages/Documents'
+import Tasks from './pages/Tasks'
+import FocusMode from './pages/FocusMode'
+import Settings from './pages/Settings'
 import './styles/global.css'
 
 export default function App() {
   const dispatch = useDispatch()
   const prefs = useSelector(s => s.prefs)
+  const location = useLocation()
+  const isFocusMode = location.pathname === '/focus'
 
   // Load preferences from Cosmos on mount
   useEffect(() => {
     fetchPreferences()
-      .then(p => {
-        const mapped = {
-          readingLevel: p.reading_level,
-          fontChoice: p.font_choice,
-          bionicReading: p.bionic_reading,
-          lineHeight: p.line_height,
-          letterSpacing: p.letter_spacing,
-          timerLengthMinutes: p.timer_length_minutes,
-          focusMode: p.focus_mode,
-          granularity: p.granularity,
-          colorTheme: p.color_theme,
-        }
-        dispatch(prefsActions.setPrefs(mapped))
-      })
+      .then(p => dispatch(prefsActions.setPrefs({
+        readingLevel: p.reading_level,
+        fontChoice: p.font_choice,
+        bionicReading: p.bionic_reading,
+        lineHeight: p.line_height,
+        letterSpacing: p.letter_spacing,
+        timerLengthMinutes: p.timer_length_minutes,
+        focusMode: p.focus_mode,
+        granularity: p.granularity,
+        colorTheme: p.color_theme,
+      })))
       .catch(() => dispatch(prefsActions.setPrefs({})))
   }, [dispatch])
 
-  // Apply CSS variables from prefs
+  // Set time-of-day theme once on mount
+  useEffect(() => {
+    const hour = new Date().getHours()
+    let timeTheme = 'afternoon'
+    if (hour >= 6 && hour < 12) timeTheme = 'morning'
+    else if (hour >= 12 && hour < 17) timeTheme = 'afternoon'
+    else if (hour >= 17 && hour < 21) timeTheme = 'evening'
+    else timeTheme = 'night'
+    document.documentElement.setAttribute('data-time-theme', timeTheme)
+  }, [])
+
+  // Apply CSS variables whenever preferences change
   useEffect(() => {
     const root = document.documentElement
-    root.setAttribute('data-theme', prefs.colorTheme || 'calm')
+    // 'calm' = no manual override, time theme shows through
+    if (prefs.colorTheme && prefs.colorTheme !== 'calm') {
+      root.setAttribute('data-theme', prefs.colorTheme)
+    } else {
+      root.removeAttribute('data-theme')
+    }
     root.setAttribute('data-font', prefs.fontChoice || 'default')
     root.style.setProperty('--line-height', prefs.lineHeight ?? 1.6)
     root.style.setProperty('--letter-spacing', `${prefs.letterSpacing ?? 0}px`)
   }, [prefs.colorTheme, prefs.fontChoice, prefs.lineHeight, prefs.letterSpacing])
 
+  // Focus Mode: full screen, no nav, no chrome
+  if (isFocusMode) {
+    return <FocusMode />
+  }
+
   return (
     <div className="app-shell">
-      {/* Sidebar */}
-      <AnimatePresence>
-        {!prefs.focusMode && (
-          <motion.aside
-            className="sidebar"
-            initial={{ x: -280, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -280, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-            aria-label="Settings sidebar"
-          >
-            {/* Logo */}
-            <div style={{ marginBottom: '2rem' }}>
-              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem', color: 'var(--text-primary)' }}>
-                NeuroFocus
-              </h1>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                Your calm work companion
-              </p>
-            </div>
+      <TopNav />
 
-            <PreferenceDashboard />
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Main content */}
       <main className="main-content" aria-label="Main content">
-        {/* Focus mode toggle */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button
-            className="btn btn-ghost"
-            style={{ fontSize: '0.82rem' }}
-            onClick={() => dispatch(prefsActions.toggleFocusMode())}
-            aria-pressed={prefs.focusMode}
-          >
-            {prefs.focusMode ? '← Show sidebar' : 'Focus mode'}
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', gap: '1.5rem', flex: 1, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-          <div style={{ flex: '1 1 380px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <Decomposer />
-          </div>
-          <div style={{ flex: '1 1 380px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <Refactor />
-          </div>
-        </div>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/documents" element={<Documents />} />
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </AnimatePresence>
       </main>
     </div>
   )

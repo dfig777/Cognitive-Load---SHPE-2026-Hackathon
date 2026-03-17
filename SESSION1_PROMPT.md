@@ -1,3 +1,9 @@
+# STEP 1: Replace CLAUDE.md entirely
+
+Replace the entire CLAUDE.md file in the repo root with the content below. This is v4 — the final locked version with all design decisions.
+
+---
+
 # CLAUDE.md — NeuroFocus: AI Cognitive Support Companion
 
 > "A calm place to start."
@@ -32,10 +38,10 @@ Before committing or pushing ANY code, Claude must:
 ### Backend (COMPLETE)
 All 8 Azure services integrated. Full security audit done. See backend/ for all files.
 
-### Frontend (IN PROGRESS — Session 1 complete, Session 2 next)
-- Color system designed and locked — 5 accent colors, 4 time-of-day themes (DONE)
-- Session 1: App shell, TopNav, routing, page shells, time-of-day themes, staggered animations (DONE)
-- Session 2: Documents page — upload zone, /api/upload + /api/summarise streaming, conversational output (NEXT)
+### Frontend (IN PROGRESS — Session 1)
+Existing components: Decomposer.jsx, Refactor.jsx, TimerRing.jsx, PreferenceDashboard.jsx, store.js, api.js, bionic.jsx, global.css
+These are FUNCTIONAL and should be KEPT and ADAPTED, not rebuilt from scratch.
+Color system designed and locked — 5 accent colors, 4 time-of-day themes (DONE)
 
 ## Product Identity
 
@@ -43,24 +49,26 @@ NeuroFocus is ONE cohesive AI companion. It knows the user through stored prefer
 
 The AI lives everywhere — it IS the experience. Not a sidebar tool.
 
-## Navigation — Minimal Top Bar
+## Navigation — Minimal Top Bar (Style B)
 
-NO sidebar. The app uses a clean minimal top bar:
+NO sidebar. NO left panel. The app uses a clean minimal top bar:
 
-- Left: "NeuroFocus" logo text (DM Serif Display, font-weight 500)
+- Left: "NeuroFocus" logo text
 - Center-right: 4 nav items as small rounded pills: Home, Documents, Tasks, Focus
-- Far right: Settings gear icon + user avatar circle with initial "D"
-- Active nav item: teal-tinted pill background
-- Inactive items: secondary text color
-- Focus Mode route hides the entire top bar — full screen
+- Far right: Settings icon (gear) and user avatar circle
+
+Active nav item gets teal-tinted background. Inactive items are secondary text color.
+Focus Mode route hides the entire top bar — full screen.
+
+The home page is FULL SCREEN chat — like Claude or ChatGPT. Centered greeting, centered input, suggested action buttons. The chat IS the page.
 
 ## Five Pages
 
 ### Page 1: Home (Full-Screen AI Chat)
 Route: / or /home
-Layout: Full screen. TopNav at top. Everything centered.
-New users: Conversational onboarding — guided preference questions one at a time.
-Returning users: Time-of-day greeting with name, quick action buttons ("I have a document", "Break down a task", "Start focus mode"), chat input.
+Layout: Full screen. Logo top-left. Nav items top-right. Everything centered.
+New users: Conversational onboarding — guided preference questions one at a time, UI adapts live as each answer is given. All questions are guided choice with "type your own" option.
+Returning users: Time-of-day greeting with name, last session context, quick action buttons ("I have a document", "Break down a task", "Start focus mode"), full chat input below.
 AI chat with conversation history. Responses stream in. Chat persists across page navigation.
 
 ### Page 2: Documents (Conversational Document Processing)
@@ -72,27 +80,30 @@ THREE STATES:
 **State 1 — Input:**
 Centered headline: "Share what's overwhelming you."
 Subtitle: "We'll make it make sense."
-One unified input zone (breathing animation with subtle teal pulse): accepts pasted text OR file drops.
-Small "+ Upload file" button in bottom-left. "PDF, Word, image" label.
-One "Go" button bottom-right.
+One unified input zone (breathing animation with subtle teal pulse): accepts pasted text OR file drops. One text area that does both.
+Small "+ Upload file" button in bottom-left of zone. "PDF, Word, image" label.
+One "Go" button.
 
 **State 2 — AI asks ONE guided question:**
-After scanning, AI shows what it found as a chat message.
+After scanning, AI shows what it found as a chat message: "This looks like a [type] with [details]."
 Then asks: "What would help you most right now?" with 4 guided choices:
-- Teal: "Just tell me what I need to do"
-- Green: "Make it easier to read"
-- Sky blue: "Show me what matters most"
-- Lilac: "I'm not sure, just help me"
+- Teal: "Just tell me what I need to do" — action items and deadlines
+- Green: "Make it easier to read" — simplify language
+- Sky blue: "Show me what matters most" — highlight key sections
+- Lilac: "I'm not sure, just help me" — AI decides based on preferences
 
 **State 3 — Results as conversation:**
-AI delivers results in chat format — not tabs, not cards.
-After results, guided next steps as buttons + text input for follow-up questions.
+AI delivers results in chat format — not tabs, not cards. A conversational response with structured content inline.
+After results, AI offers guided next steps as buttons: "Turn into tasks", "Simplify full text", "Highlight key parts"
+PLUS a text input: "Ask anything about this document..." for open-ended follow-up questions.
+The user can keep asking questions about the document and the AI responds with full context.
 
 ### Page 3: My Tasks (Living Checklist — MOST POLISHED PAGE)
 Route: /tasks
 Two entry points: type a goal in input at top, or tasks flow from Documents page.
-Living checklist — AI responds contextually to completions.
-Break any task down further. Granularity control (Micro/Normal/Broad). Progress indicator.
+Living checklist — tasks feel alive, AI responds contextually to completions.
+Break any task down further. AI understands dependencies.
+Granularity control (Micro/Normal/Broad). Progress indicator.
 "Start Focus Mode" button.
 
 ### Page 4: Focus Mode
@@ -102,7 +113,6 @@ Single task displayed. Circular timer. Done/Skip/Break buttons.
 Timer colors: green → blue → warm amber (NEVER red).
 Energy check-in periodically with 3 guided buttons.
 Overwhelm escape hatch: "Everything is too much" strips to one action.
-Exit button: top-left corner.
 Session summary on exit.
 
 ### Page 5: Settings
@@ -169,7 +179,7 @@ Text primary: #2E2828 / Secondary: #7A6E70
 ### Night (9pm-6am): deep ocean
 Background: radial-gradient(ellipse at 50% 46%, #2C2434 0%, #241E2C 25%, #201A26 45%, #1C1822 65%, #1E1A22 85%, #201C24 100%)
 Card bg: rgba(40,34,48,0.7) border rgba(80,70,90,0.45)
-Text primary: #EDE8EC / Secondary: #C0B8C4 / Muted: #9A90A0
+Text primary: #DCD4DA / Secondary: #A098A4
 
 ### Time detection:
 ```javascript
@@ -186,26 +196,31 @@ Set data-time-theme on document root. Transition: 2s ease on background, 0.5s on
 ## Transitions and Animations
 
 ### Page transitions: soft slide up
-- Outgoing: opacity 0, translateY(-12px) over 0.4s
-- Incoming: starts at translateY(16px) opacity 0, animates to (0, 1) over 0.45s
-- Framer Motion AnimatePresence mode="wait"
+- Outgoing page: opacity 0, translateY(-12px) over 0.4s
+- Incoming page: starts at translateY(16px) opacity 0, animates to translateY(0) opacity 1 over 0.45s
+- Use Framer Motion AnimatePresence with mode="wait"
 - Easing: cubic-bezier(0.4, 0, 0.2, 1)
 
+### Smaller elements (modals, tooltips, chips, nudges): gentle fade
+- opacity 0 → 1 over 0.3s ease
+
 ### Staggered reveal on every page load
-- Elements appear one by one with ~100-120ms delay
-- Each element: translateY(8px) opacity 0 → (0, 1) over 0.4s ease
+- Elements appear one by one with ~100-120ms delay between each
+- Each element: translateY(8px) opacity 0 → translateY(0) opacity 1 over 0.4s ease
+- Order: heading first, then subtitle, then action buttons/cards, then input
 
 ### Task completion micro-interaction
-- Dot scales 1.3x then back to 1x (0.3s)
-- Background shifts teal → green (0.5s ease)
+- Dot scales to 1.3x then back to 1x (0.3s cubic-bezier)
+- Background shifts from teal to green (0.5s ease)
 - Text gets line-through and opacity 0.45 (0.4s ease)
+- Time label changes to "done" with green color
 
 ### Breathing animation (document upload zone)
-- box-shadow pulse: 0 0 0 0px rgba(42,122,144,0.04) → 0 0 0 12px rgba(42,122,144,0.02) over 4s ease-in-out infinite
+- Subtle box-shadow pulse: 0 0 0 0px rgba(42,122,144,0.04) → 0 0 0 12px rgba(42,122,144,0.02) over 4s ease-in-out infinite
 
 ### General rules
-- All interactive elements: 0.25s ease on hover/focus
-- Rounded corners: 14px cards, 8px buttons, 12px inputs
+- All interactive elements: 0.25s ease transitions on hover/focus
+- Rounded corners everywhere: 14px cards, 8px buttons, 12px inputs
 - No jarring, no popping, no flashing. Everything breathes.
 
 ## Key Constraints
@@ -240,76 +255,114 @@ Set data-time-theme on document root. Transition: 2s ease on background, 0.5s on
 | POST | /api/checkin | Energy check-in | To build |
 | POST | /api/chat | AI companion chat | To build |
 
-## Azure Architecture — 8 Services
-
-1. **Azure OpenAI (GPT-4o)** — All AI. Structured JSON output. Low temperature. Streaming SSE.
-2. **Azure Cosmos DB (NoSQL)** — Preferences, sessions, cached document results. Serverless.
-3. **Azure AI Content Safety** — Two-layer: cognitive pressure regex + Azure API. Calm JSON at 200 status.
-4. **Azure AI Document Intelligence** — prebuilt-read model. Magic byte validation.
-5. **Azure Blob Storage** — User-scoped paths. Archival only.
-6. **Azure App Service** — Hosts backend. Managed identity for Key Vault.
-7. **Azure Monitor / App Insights** — OTel spans → customEvents. 4 custom events tracked.
-8. **Azure Key Vault** — 10 secrets. DefaultAzureCredential. model_copy() avoids pydantic re-resolution.
-
-## Backend Structure
-
-```
-backend/
-├── main.py
-├── config.py
-├── models.py
-├── db.py
-├── ai_service.py
-├── content_safety.py
-├── blob_service.py
-├── doc_intelligence.py
-├── monitoring.py
-├── keyvault.py
-├── requirements.txt
-└── .env.example
-```
-
-## Frontend Structure
-
-```
-frontend/
-├── index.html
-├── package.json
-├── vite.config.js
-├── src/
-│   ├── main.jsx
-│   ├── App.jsx              ← Router, layout, TopNav
-│   ├── store.js             ← Redux slices
-│   ├── pages/
-│   │   ├── Home.jsx         ← Full-screen AI chat landing
-│   │   ├── Documents.jsx    ← Conversational document processing
-│   │   ├── Tasks.jsx        ← Living checklist
-│   │   ├── FocusMode.jsx    ← Full-screen focus, exit top-left
-│   │   └── Settings.jsx     ← Preferences
-│   ├── components/
-│   │   ├── TopNav.jsx       ← Horizontal top nav (logo + pills + icons)
-│   │   ├── Sidebar.jsx      ← DEPRECATED — kept for reference
-│   │   ├── TimerRing.jsx
-│   │   └── PreferenceDashboard.jsx
-│   ├── utils/
-│   │   ├── api.js
-│   │   └── bionic.jsx
-│   └── styles/
-│       └── global.css
-```
-
-## Responsible AI — Core Design Principles
-
-- ALL AI output: calm, supportive, non-anxiety-inducing
-- Content Safety: standard + custom cognitive pressure detection
-- NEVER open-ended questions — always guided choices
-- After every output: one gentle contextual suggestion
-- Error messages: warm tone, never alarming
-- Overwhelm escape hatch in Focus Mode
-- Explainability: every simplification shows WHY
-- User always in control
-
 ## Development
 
-Backend: `cd backend && uvicorn main:app --reload` (port 8000)
-Frontend: `cd frontend && npm install && npm run dev` (port 5173, proxies /api to 8000)
+Backend: cd backend && uvicorn main:app --reload (port 8000)
+Frontend: cd frontend && npm install && npm run dev (port 5173)
+
+---
+
+# STEP 2: Build Frontend Session 1 — App Shell + Routing + Navigation
+
+Read the updated CLAUDE.md. Now build Session 1.
+
+## What to build:
+
+### 1. Install dependencies
+```bash
+cd frontend
+npm install react-router-dom --save
+```
+
+### 2. Update src/main.jsx
+- Wrap app in BrowserRouter + Redux Provider
+- Structure: BrowserRouter > Provider > App
+
+### 3. Build src/components/TopNav.jsx
+- A clean horizontal top bar
+- Left: "NeuroFocus" text logo (font-weight 500, primary text color)
+- Center-right: 4 nav items as NavLinks: Home, Documents, Tasks, Focus
+- Far right: small gear icon link to /settings, user avatar circle with initial "D"
+- Active NavLink gets teal-tinted background pill: rgba(42,122,144,0.1) with color teal
+- Inactive items: secondary text color
+- The ENTIRE top bar hides on /focus route
+- Height: ~52px. Subtle bottom border matching theme.
+- Smooth appearance with Framer Motion
+
+### 4. Rewrite src/App.jsx
+- Layout: TopNav at top (unless Focus Mode) + main content area centered
+- React Router Routes:
+  - / and /home → Home.jsx
+  - /documents → Documents.jsx
+  - /tasks → Tasks.jsx
+  - /focus → FocusMode.jsx (TopNav hidden)
+  - /settings → Settings.jsx
+- Keep existing preference loading (useEffect → fetchPreferences)
+- Keep CSS variable application (data-theme, data-font, line-height, letter-spacing)
+- Add time-of-day detection: set data-time-theme on document.documentElement
+- Wrap page content in Framer Motion AnimatePresence for slide-up transitions
+
+### 5. Create page shells in src/pages/
+Each page shell should:
+- Use the warm card styling from the design system
+- Have a staggered entrance animation (elements appear one by one)
+- Show placeholder content indicating what will be built
+
+**Home.jsx:**
+- Centered layout, full height
+- Large greeting: "Good [morning/afternoon/evening], Diego" (use time detection)
+- Subtitle: "What would you like to work on?"
+- Three action buttons: "I have a document" (teal), "Break down a task" (orange-soft), "Start focus mode" (green-soft)
+- Chat input below: rounded, with placeholder "What's on your mind?"
+- All elements stagger in on load
+
+**Documents.jsx:**
+- Centered, max-width 540px
+- Headline: "Share what's overwhelming you."
+- Subtitle: "We'll make it make sense."
+- Upload zone with breathing animation (teal pulse box-shadow)
+- Textarea inside zone: "Paste text, drop a file, or describe what you need help with..."
+- Small "+ Upload file" button bottom-left, "Go" button bottom-right
+- Staggered entrance
+
+**Tasks.jsx:**
+- Centered, max-width 540px
+- Input at top: "What do you need to break down?"
+- Empty state below: "Your tasks will appear here. Type a goal above or bring in tasks from a document."
+- Staggered entrance
+
+**FocusMode.jsx:**
+- Full screen, no TopNav
+- Centered: "Focus Mode coming soon"
+- A small "Exit" link to go back to /tasks
+
+**Settings.jsx:**
+- Centered, max-width 480px
+- "Settings" heading
+- Placeholder text: "Preferences will go here"
+
+### 6. Update src/styles/global.css
+- Add 4 time-of-day theme blocks: [data-time-theme="morning"], [data-time-theme="afternoon"], [data-time-theme="evening"], [data-time-theme="night"]
+- Each sets CSS custom properties: --bg-gradient, --bg-card, --bg-card-border, --text-primary, --text-secondary, --text-muted, --color-done, --color-active, --color-upcoming, --color-paused, --color-ai, --color-inactive
+- Include the full gradient values from CLAUDE.md
+- Keep existing font-face declarations, font switching, base styles
+- Add TopNav styles
+- Add page transition styles
+- Default: afternoon theme
+- Keep [data-theme="dark"] and [data-theme="high-contrast"] as manual overrides
+
+### 7. DO NOT modify these existing files:
+Decomposer.jsx, Refactor.jsx, TimerRing.jsx, PreferenceDashboard.jsx, store.js, api.js, bionic.jsx
+
+### 8. After building:
+- Run `npm run dev` and verify:
+  - App loads with TopNav showing NeuroFocus logo + 4 nav items
+  - Clicking each nav item navigates to correct page with slide-up transition
+  - Active nav item highlighted in teal
+  - Focus Mode hides TopNav completely
+  - Time-of-day theme applied based on current hour
+  - Staggered entrance animations on each page
+  - Breathing animation on Documents upload zone
+  - Overall vibe: warm, calm, spacious — like opening a quiet room
+- Show me everything before committing
+- Commit: "Frontend Session 1: App shell, top nav, routing, time-of-day themes, page transitions"
