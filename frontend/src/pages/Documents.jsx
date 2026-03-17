@@ -300,9 +300,9 @@ export default function Documents() {
   // ── Turn into tasks ───────────────────────────────────────────────────── //
 
   async function handleTurnIntoTasks() {
+    const groupName = `From: ${docName || 'Document'}`
     if (actionItems.length > 0) {
-      dispatch(tasksActions.setGoal(docName || 'From document'))
-      dispatch(tasksActions.setSteps(actionItems))
+      dispatch(tasksActions.addGroup({ name: groupName, source: 'document', tasks: actionItems }))
       navigate('/tasks')
       return
     }
@@ -313,8 +313,7 @@ export default function Documents() {
         reading_level: prefs.readingLevel || 'standard',
       })
       if (!res.flagged && res.steps?.length) {
-        dispatch(tasksActions.setGoal(docName || 'From document'))
-        dispatch(tasksActions.setSteps(res.steps))
+        dispatch(tasksActions.addGroup({ name: groupName, source: 'document', tasks: res.steps }))
         navigate('/tasks')
       }
     } catch {}

@@ -511,6 +511,16 @@ input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
   pointer-events: none;
 }
 
+/* ── Task page helpers ───────────────────────────────────────────────────── */
+
+/* Suppress width:100% on small number inputs used in task filters / edit */
+input[type="number"] {
+  width: auto;
+}
+
+/* Hover bg used in More menu items */
+.bg-hover { background: var(--accent-soft) !important; }
+
 /* ── Nav (legacy — kept for any inline nav usage) ────────────────────────── */
 .nav-item {
   display: flex;
