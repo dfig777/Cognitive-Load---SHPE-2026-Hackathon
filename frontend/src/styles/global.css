@@ -347,6 +347,13 @@ input:focus, textarea:focus {
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
   animation: breathe 4s ease-in-out infinite;
+  transition: border-color var(--transition), background var(--transition);
+}
+.upload-zone.dragging {
+  border-color: var(--accent);
+  border-style: solid;
+  background: var(--accent-soft);
+  animation: none;
 }
 
 @keyframes breathe {

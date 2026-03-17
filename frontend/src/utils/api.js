@@ -46,6 +46,19 @@ export async function summariseStream(payload, onChunk, onDone, onError) {
   })
   if (!res.ok) { onError('Something went quiet — please try again.'); return }
 
+  // Content Safety can return plain JSON {flagged: true, message: "..."} at 200
+  // instead of SSE — detect and handle before entering the stream loop
+  const contentType = res.headers.get('content-type') || ''
+  if (!contentType.includes('text/event-stream')) {
+    const json = await res.json().catch(() => null)
+    if (json?.flagged) {
+      onError(json.message || 'This content couldn\'t be processed right now.')
+    } else {
+      onError('Something went quiet — please try again.')
+    }
+    return
+  }
+
   const reader = res.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
@@ -90,5 +103,22 @@ export async function createSession(payload) {
 
 export async function listSessions() {
   const res = await apiFetch('/api/sessions')
+  return res.json()
+}
+
+// ── Upload document (multipart) ────────────────────────────────────────── //
+export async function uploadDocument(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  // No Content-Type header — browser sets multipart boundary automatically
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'X-User-Id': USER_ID },
+    body: formData,
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }))
+    throw new Error(err.detail || 'Upload failed')
+  }
   return res.json()
 }
