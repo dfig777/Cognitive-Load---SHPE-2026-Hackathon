@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { prefsActions } from './store'
@@ -17,28 +17,45 @@ export default function App() {
   const dispatch = useDispatch()
   const prefs = useSelector(s => s.prefs)
   const location = useLocation()
+  const navigate = useNavigate()
   const isFocusMode = location.pathname === '/focus'
 
-  // Load preferences from Cosmos on mount
+  // Load preferences from Cosmos on mount, then redirect to home
   useEffect(() => {
     fetchPreferences()
-      .then(p => dispatch(prefsActions.setPrefs({
-        name:               p.name,
-        communicationStyle: p.communication_style,
-        onboardingComplete: p.onboarding_complete,
-        walkthroughComplete: p.walkthrough_complete,
-        readingLevel: p.reading_level,
-        fontChoice:   p.font_choice,
-        bionicReading: p.bionic_reading,
-        lineHeight:   p.line_height,
-        letterSpacing: p.letter_spacing,
-        timerLengthMinutes: p.timer_length_minutes,
-        focusMode:    p.focus_mode,
-        granularity:  p.granularity,
-        colorTheme:   p.color_theme,
-      })))
-      .catch(() => dispatch(prefsActions.setPrefs({})))
-  }, [dispatch])
+      .then(p => {
+        // Persist onboarding status to localStorage as a fallback for offline/error cases
+        if (p.onboarding_complete) {
+          try { localStorage.setItem('pebble_onboarding_complete', 'true') } catch {}
+        }
+        dispatch(prefsActions.setPrefs({
+          name:               p.name,
+          communicationStyle: p.communication_style,
+          onboardingComplete: p.onboarding_complete,
+          walkthroughComplete: p.walkthrough_complete,
+          readingLevel: p.reading_level,
+          fontChoice:   p.font_choice,
+          bionicReading: p.bionic_reading,
+          lineHeight:   p.line_height,
+          letterSpacing: p.letter_spacing,
+          timerLengthMinutes: p.timer_length_minutes,
+          focusMode:    p.focus_mode,
+          granularity:  p.granularity,
+          colorTheme:   p.color_theme,
+        }))
+        // Always land on home after a fresh load (unless in focus mode)
+        if (location.pathname !== '/focus') {
+          navigate('/', { replace: true })
+        }
+      })
+      .catch(() => {
+        // Backend unreachable — use localStorage fallback so the user doesn't
+        // get looped back into onboarding every time there's a network hiccup
+        let onboardingComplete = false
+        try { onboardingComplete = localStorage.getItem('pebble_onboarding_complete') === 'true' } catch {}
+        dispatch(prefsActions.setPrefs({ onboardingComplete }))
+      })
+  }, [dispatch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Set time-of-day theme once on mount
   useEffect(() => {

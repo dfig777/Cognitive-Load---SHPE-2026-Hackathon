@@ -146,7 +146,7 @@ function DescribeInput({ onSubmit }) {
       <form onSubmit={e => { e.preventDefault(); onSubmit(val) }} style={{ display: 'flex', gap: 8 }}>
         <input ref={ref} value={val} onChange={e => setVal(e.target.value)}
           placeholder="describe what works best for you..." style={{ flex: 1, borderRadius: 12, fontSize: 13 }} />
-        <button type="submit" className="btn btn-primary" style={{ flexShrink: 0, fontSize: 13 }}>done</button>
+        <button type="submit" className="btn btn-primary" style={{ flexShrink: 0, fontSize: 13 }}>Done</button>
       </form>
     </motion.div>
   )
@@ -156,7 +156,7 @@ function SettingsNote() {
   return (
     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.5, transition: { duration: 0.4, delay: 0.55 } }}
       style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
-      you can change any of these anytime in settings
+      You can change any of these anytime in settings
     </motion.p>
   )
 }
@@ -332,10 +332,10 @@ export default function Onboarding() {
             <motion.div initial={ENTER} animate={{ ...ENTER_T, transition: { ...ENTER_T.transition, delay: 0.15 } }}
               style={{ display: 'flex', gap: '0.75rem' }}>
               <button className="btn btn-primary" style={{ borderRadius: 8 }} onClick={() => setStage('meet')}>
-                that's me
+                That's me
               </button>
               <button className="btn btn-ghost" style={{ borderRadius: 8 }} onClick={() => { setNameInput(name); setStage('name') }}>
-                let me fix that
+                Let me fix that
               </button>
             </motion.div>
           </>
@@ -364,13 +364,13 @@ export default function Onboarding() {
                 { v: 'simple',   l: 'short and clear',            s: 'just the essentials.' },
                 { v: 'standard', l: 'a good balance',             s: 'enough detail, nothing extra.' },
                 { v: 'detailed', l: 'give me everything',         s: "i like having the full picture." },
-                { v: 'describe', l: 'let me describe what i need', s: null },
-                { v: 'unsure',   l: "i'm not sure yet",           s: null },
+                { v: 'describe', l: 'Let me describe what I need', s: null },
+                { v: 'unsure',   l: "I'm not sure yet",           s: null },
               ].map((c, i) => (
                 <motion.div key={c.v} {...cardAnim(i)}>
                   <ChoiceCard label={c.l} sub={c.s}
                     selected={selectedCard === c.v}
-                    dimmed={!!selectedCard && selectedCard !== c.v && selectedCard !== 'describe' && c.v !== 'describe'}
+                    dimmed={!!selectedCard && selectedCard !== c.v && selectedCard !== 'describe'}
                     onClick={() => { if (['simple','standard','detailed'].includes(c.v)) setReadingLevel(c.v); handleQ2(c.v) }}
                   />
                 </motion.div>
@@ -450,13 +450,13 @@ export default function Onboarding() {
                 { v: 'micro',   l: 'walk me through it step by step', s: 'the smaller, the better.' },
                 { v: 'normal',  l: 'give me a clear plan',            s: 'not too detailed, not too vague.' },
                 { v: 'broad',   l: 'just show me the big picture',    s: "i'll figure out the rest." },
-                { v: 'describe',l: 'let me describe what i need',     s: null },
-                { v: 'unsure',  l: "i'm not sure yet",                s: null },
+                { v: 'describe',l: 'Let me describe what I need',     s: null },
+                { v: 'unsure',  l: "I'm not sure yet",                s: null },
               ].map((c, i) => (
                 <motion.div key={c.v} {...cardAnim(i)}>
                   <ChoiceCard label={c.l} sub={c.s}
                     selected={selectedCard === c.v}
-                    dimmed={!!selectedCard && selectedCard !== c.v && selectedCard !== 'describe' && c.v !== 'describe'}
+                    dimmed={!!selectedCard && selectedCard !== c.v && selectedCard !== 'describe'}
                     onClick={() => { if (['micro','normal','broad'].includes(c.v)) setGranularity(c.v); handleQ5(c.v) }}
                   />
                 </motion.div>
@@ -484,13 +484,13 @@ export default function Onboarding() {
                 { v: 'warm',    l: 'like a deep breath',         s: 'warm and reassuring.' },
                 { v: 'direct',  l: 'like a clear path',          s: 'calm and to the point.' },
                 { v: 'balanced',l: 'a little of each',           s: null },
-                { v: 'describe',l: 'let me describe what works', s: null },
-                { v: 'unsure',  l: "i'll figure it out as i go", s: null },
+                { v: 'describe',l: "Let me describe what works", s: null },
+                { v: 'unsure',  l: "I'll figure it out as I go", s: null },
               ].map((c, i) => (
                 <motion.div key={c.v} {...cardAnim(i)}>
                   <ChoiceCard label={c.l} sub={c.s}
                     selected={selectedCard === c.v}
-                    dimmed={!!selectedCard && selectedCard !== c.v && selectedCard !== 'describe' && c.v !== 'describe'}
+                    dimmed={!!selectedCard && selectedCard !== c.v && selectedCard !== 'describe'}
                     onClick={() => { if (['warm','direct','balanced'].includes(c.v)) setCommStyle(c.v); handleQ6(c.v) }}
                   />
                 </motion.div>
@@ -510,7 +510,7 @@ export default function Onboarding() {
         return (
           <motion.h2 initial={ENTER} animate={ENTER_T}
             style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 'clamp(20px, 4vw, 26px)', color: 'var(--text-primary)', margin: 0 }}>
-            you're all set, {name}.
+            You're all set, {name}.
           </motion.h2>
         )
 

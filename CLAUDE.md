@@ -44,7 +44,7 @@ All code should be calibrated for solo-builder reality. Efficiency matters, neve
 
 ---
 
-## Build Status — Current State (as of Session 6, March 20 2026)
+## Build Status — Current State (as of Session 12, March 23 2026)
 
 ### What's FULLY BUILT AND WORKING
 
@@ -60,18 +60,18 @@ All code should be calibrated for solo-builder reality. Efficiency matters, neve
 | `/api/sessions` GET + POST | ✅ Working | Cosmos DB backed |
 | `/api/chat` POST (SSE) | ✅ Working | Full 12-block prompt, streaming, actions |
 | `/api/tasks` GET + POST | ✅ Working | Cosmos DB backed, full CRUD |
-| TopNav | ✅ Complete | Pebble brand, 4 nav pills, settings gear |
-| Redux store | ✅ Complete | prefs, tasks, summarise slices |
+| TopNav | ✅ Complete | Pebble brand, 4 nav pills, settings gear, user initial avatar |
+| Redux store | ✅ Complete | prefs, tasks, summarise slices; `deleteGroup` reducer added |
 | `api.js` utilities | ✅ Complete | chatStream, saveTasks, loadTasks, all endpoints |
-| App.jsx | ✅ Complete | Loading gate, onboarding gate, theme system |
-| Onboarding flow | ✅ Complete | 11-stage state machine, saves to Cosmos, dark-theme cards fixed |
-| Home page (chat) | ✅ Complete | SSE streaming, quick actions, AI greeting, dedup from Cosmos |
+| App.jsx | ✅ Complete | Loading gate, onboarding gate, theme system, localStorage fallback |
+| Onboarding flow | ✅ Complete | 11-stage state machine, saves to Cosmos, no refresh loop |
+| Home page (chat) | ✅ Complete | SSE streaming, hero mode, session archive/restore, "new chat", loading phrases |
 | Documents page | ✅ Working | Upload, processing, results, click-based tooltips |
-| Tasks page | ✅ Working | Accordion groups, task actions, gamification removed |
+| Tasks page | ✅ Working | Accordion groups, task actions, break-down split-pane, delete group |
 | FocusMode page | ✅ Working | Full screen, enhanced BreathingCircle, accessible button sizes |
 | Settings page | ✅ Working | Font, theme, timer, comm style, reading level, granularity all wired |
 | WalkthroughOverlay | ✅ Complete | 5-step teal glow spotlight tour, skip-able, portal-based |
-| `global.css` themes | ✅ Complete | 4 time-of-day themes, all design tokens |
+| `global.css` themes | ✅ Complete | 4 time-of-day themes + manual override selectors, all design tokens |
 
 ### What's MISSING / NOT YET BUILT
 
@@ -162,6 +162,22 @@ All code should be calibrated for solo-builder reality. Efficiency matters, neve
 58. ✅ **Home.jsx voice pass** — Placeholder texts lowercased ("What's on your mind?" → "what's on your mind?" etc.). Quick action hints lowercased. Error fallback "Something went quiet" → "something went quiet". Quick action labels: "Break down a goal" → "break down a goal", "Start focus mode" → "start focus mode".
 59. ✅ **Documents.jsx voice pass** — Upload error message lowercased. "+ Upload file" → "+ upload file".
 
+### Fixed in Session 12 (March 23 2026)
+60. ✅ **Loading phrases in chat** — Added `LOADING_PHRASES` pool ("pebbling...", "getting what you need...", "be right there...", etc.). `PulseDot` upgraded: now shows Pebble dot avatar + animated dots + italic personality phrase. Stable via `useRef` so it doesn't flicker on re-renders.
+61. ✅ **Break down split-pane** — Clicking "break down" on a task opens a `BreakdownChatPanel` that slides in from the right (spring, `width: 380`). Tasks list shifts left. Panel auto-seeds Pebble with task context on mount (seed message hidden; Pebble's response is first visible thing). Has "Break it down for me →" button to decompose + replace. Full chat thread with streaming.
+62. ✅ **"New chat" button on Home** — Pill button appears in the chat header (top-right). Archives current session, clears messages, resets to hero screen, fetches fresh greeting.
+63. ✅ **User initial in TopNav** — TopNav now reads `prefs.name` from Redux. Shows first initial in a teal-tinted circle (28px) when name is set. Falls back to ocean sage dot. Wrapped in `<Link to="/settings">`.
+64. ✅ **"What was I working on?" dropdown** — Button now shows a dropdown list of archived sessions (title = first real user message, date, message count) when sessions exist. Clicking a session loads its messages and switches to chat view (`setHeroMode(false)`). Outside-click closes dropdown.
+65. ✅ **Theme switching fixed** — CSS only had `[data-time-theme="morning"]` etc. but `App.jsx` writes `data-theme="morning"`. Added `[data-theme="morning/afternoon/evening/night"]` selectors to `global.css` mirroring the time-of-day counterparts. Theme changes in Settings now take effect immediately.
+66. ✅ **Time-of-day greeting cache** — `heroGreeting` sessionStorage cache now includes an `hour` field. Cache is only reused if `cached.hour === new Date().getHours()`. Fixes "morning" greeting showing at 3 AM after a session started in the morning.
+67. ✅ **Tasks hover highlight stuck** — `whileHover={{ background: ... }}` on the accordion header `<motion.button>` gets stuck when the component re-renders during hover. Replaced with `onMouseEnter`/`onMouseLeave` on a plain `<button>` (chevron kept as `motion.span`).
+68. ✅ **Delete task group** — Trash icon added to each group header (separate sibling button, not nested inside the toggle — avoids invalid HTML). Clicking shows an amber (`--color-ai`) confirmation strip that slides in with AnimatePresence. Confirming dispatches `tasksActions.deleteGroup`. `deleteGroup` reducer added to `tasksSlice` in `store.js`.
+69. ✅ **Onboarding loop on refresh** — `App.jsx` `.catch()` was dispatching `setPrefs({})` on any backend error → `onboardingComplete` defaulted to `false`. Fixed: `.catch()` now reads `localStorage.getItem('pebble_onboarding_complete')` as fallback before defaulting. Successful prefs load now also writes `localStorage.setItem('pebble_onboarding_complete', 'true')`.
+70. ✅ **Home nav → hero screen** — `heroMode` state resets to `true` on every `location.key` change (React Router generates a new key per navigation). Clicking the Home nav link always returns to the hero, not an in-progress chat.
+71. ✅ **Previous session click loads chat** — Session click handler in the "What was I working on?" dropdown now calls `setHeroMode(false)` so the chat view renders after loading messages.
+72. ✅ **Hero typing = new session** — `handleSend` now checks: if `heroMode === true` and messages exist, archive the previous session first and start fresh. The hero screen is the canonical "new session" entry point. Previous sessions appear in the dropdown.
+73. ✅ **Session titles fixed** — `archiveSession` now skips "What was I working on?" when picking the title (uses the first real user-typed message). Sessions with only that button click are not archived at all, eliminating the flood of identically-titled entries.
+
 ### Still Open
 1. **P0-5: Chapter 5 seed data** — Needs running backend: `curl -X POST http://localhost:8000/api/tasks -H "Content-Type: application/json" -H "X-User-Id: diego" -d '{"groups":[]}'`
 2. ✅ **Walkthrough built** — `WalkthroughOverlay.jsx` complete, integrated in `Home.jsx`.
@@ -182,6 +198,12 @@ The chat endpoint returns `text/event-stream`. Event types:
 
 ### Chat State (local, not Redux)
 Chat messages live in `Home.jsx` local state (`useState`), NOT in Redux. This was a deliberate choice — Redux slices were getting too heavy and chat is page-local. Only task groups and prefs are in Redux (shared across pages).
+
+### heroMode + Session Archive Pattern
+`heroMode` state in `Home.jsx` is `true` on every navigation to Home (via `useEffect([location.key])`) and `false` once the user sends a message. The hero screen IS the "new session" entry point — `handleSend` detects `heroMode && messages.length > 0` and archives the previous session before starting fresh. Previous sessions live in `localStorage` (`pebble_chat_sessions`) as an array of `{ id, createdAt, title, msgCount, messages }`. `archiveSession()` skips "What was I working on?" when choosing a title, using the first real typed message instead.
+
+### Theme Override vs Time-of-Day Theme
+Two separate HTML attributes on `<html>`: `data-time-theme` (auto-detected by hour, never removed) and `data-theme` (manual user override, removed when set to "calm"). CSS must have BOTH `[data-time-theme="morning"]` AND `[data-theme="morning"]` selectors or manual theme switching silently does nothing.
 
 ### `replaced` flag pattern in `sendMessage`
 `let replaced = false` is a local variable inside the async function (not React state) to avoid stale closure issues when `onReplace` fires mid-stream.

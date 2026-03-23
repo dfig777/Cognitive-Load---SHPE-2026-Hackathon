@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useSelector, useDispatch } from 'react-redux'
-import { prefsActions } from '../store'
-import { savePreferences } from '../utils/api'
+import { prefsActions, tasksActions } from '../store'
+import { savePreferences, clearChatHistory, clearAllDocuments, saveTasks } from '../utils/api'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -80,6 +80,10 @@ async function persist(updates) {
 export default function Settings() {
   const dispatch = useDispatch()
   const prefs    = useSelector(s => s.prefs)
+  // Two-step confirm state per action: null | 'confirm' | 'done'
+  const [clearChatState,  setClearChatState]  = useState(null)
+  const [clearDocsState,  setClearDocsState]  = useState(null)
+  const [clearTasksState, setClearTasksState] = useState(null)
 
   // Apply font immediately when it changes
   useEffect(() => {
@@ -129,19 +133,19 @@ export default function Settings() {
       >
         <motion.div variants={staggerItem}>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 400, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
-            settings.
+            Settings.
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>
-            adjust how pebble looks and feels — changes apply instantly.
+            Adjust how Pebble looks and feels — changes apply instantly.
           </p>
         </motion.div>
 
         {/* Reading & Display */}
         <motion.div variants={staggerItem} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>reading & display</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Reading & display</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>font</label>
+            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Font</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {FONTS.map(f => (
                 <button
@@ -157,7 +161,7 @@ export default function Settings() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>theme</label>
+            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Theme</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {THEMES.map(t => (
                 <button
@@ -175,9 +179,9 @@ export default function Settings() {
 
         {/* Focus & Timer */}
         <motion.div variants={staggerItem} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>focus & timer</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Focus & timer</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>default timer length</label>
+            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Default timer length</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {TIMERS.map(t => (
                 <button
@@ -195,12 +199,12 @@ export default function Settings() {
 
         {/* Communication & AI */}
         <motion.div variants={staggerItem} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>communication & ai</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Communication & AI</h3>
 
           {/* Communication style */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              what does helpful sound like?
+              What does helpful sound like?
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {COMM_STYLES.map(c => (
@@ -227,7 +231,7 @@ export default function Settings() {
           {/* Reading level */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              how much detail do you want in explanations?
+              How much detail do you want in explanations?
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {READING_LEVELS.map(r => (
@@ -254,7 +258,7 @@ export default function Settings() {
           {/* Task granularity */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              when i break tasks down, how detailed should they be?
+              When I break tasks down, how detailed should they be?
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {GRANULARITIES.map(g => (
@@ -277,6 +281,83 @@ export default function Settings() {
               ))}
             </div>
           </div>
+        </motion.div>
+
+        {/* Your data */}
+        <motion.div variants={staggerItem} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Your data</h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>Clear things you no longer need. This can't be undone.</p>
+          </div>
+
+          {[
+            {
+              key: 'chat',
+              label: 'Clear chat history',
+              sub: 'Removes all past conversations with Pebble',
+              state: clearChatState,
+              setState: setClearChatState,
+              onConfirm: async () => {
+                await clearChatHistory()
+                setClearChatState('done')
+                setTimeout(() => setClearChatState(null), 2000)
+              },
+            },
+            {
+              key: 'docs',
+              label: 'Clear all documents',
+              sub: 'Removes all previously uploaded files',
+              state: clearDocsState,
+              setState: setClearDocsState,
+              onConfirm: async () => {
+                await clearAllDocuments()
+                setClearDocsState('done')
+                setTimeout(() => setClearDocsState(null), 2000)
+              },
+            },
+            {
+              key: 'tasks',
+              label: 'Clear all tasks',
+              sub: 'Removes all task groups and items',
+              state: clearTasksState,
+              setState: setClearTasksState,
+              onConfirm: async () => {
+                await saveTasks([])
+                dispatch(tasksActions.clearAll())
+                setClearTasksState('done')
+                setTimeout(() => setClearTasksState(null), 2000)
+              },
+            },
+          ].map(action => (
+            <div key={action.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-primary)' }}>{action.label}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>{action.sub}</div>
+              </div>
+              <div style={{ flexShrink: 0 }}>
+                {action.state === 'done' ? (
+                  <span style={{ fontSize: '0.78rem', color: 'var(--color-done)' }}>Cleared</span>
+                ) : action.state === 'confirm' ? (
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button
+                      onClick={action.onConfirm}
+                      style={{ fontSize: '0.78rem', padding: '4px 12px', borderRadius: 7, border: '1px solid var(--color-ai)', background: 'transparent', color: 'var(--color-ai)', cursor: 'pointer', fontWeight: 500 }}
+                    >Yes, clear it</button>
+                    <button
+                      onClick={() => action.setState(null)}
+                      style={{ fontSize: '0.78rem', padding: '4px 12px', borderRadius: 7, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                    >Cancel</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => action.setState('confirm')}
+                    className="btn btn-ghost"
+                    style={{ fontSize: '0.78rem', padding: '4px 12px' }}
+                  >Clear</button>
+                )}
+              </div>
+            </div>
+          ))}
         </motion.div>
 
       </motion.div>

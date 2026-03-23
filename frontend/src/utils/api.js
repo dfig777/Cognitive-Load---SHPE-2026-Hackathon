@@ -1,4 +1,16 @@
-const USER_ID = 'diego'
+// Each browser gets a persistent UUID so users don't share data.
+// For existing sessions (e.g. 'diego'), the stored value is preserved.
+function getUserId() {
+  const KEY = 'pebble_user_id'
+  let id = localStorage.getItem(KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(KEY, id)
+  }
+  return id
+}
+
+const USER_ID = getUserId()
 
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
@@ -229,6 +241,23 @@ export async function loadTasks() {
   const res = await apiFetch('/api/tasks')
   const data = await res.json()
   return { groups: (data.groups || []).map(_toFrontendGroup) }
+}
+
+// ── Documents (delete) ─────────────────────────────────────────────────── //
+export async function deleteDocument(docId) {
+  const res = await apiFetch(`/api/documents/${encodeURIComponent(docId)}`, { method: 'DELETE' })
+  return res.json()
+}
+
+export async function clearAllDocuments() {
+  const res = await apiFetch('/api/documents', { method: 'DELETE' })
+  return res.json()
+}
+
+// ── Conversations (clear) ──────────────────────────────────────────────── //
+export async function clearChatHistory() {
+  const res = await apiFetch('/api/conversations', { method: 'DELETE' })
+  return res.json()
 }
 
 // ── Upload document (multipart) ────────────────────────────────────────── //

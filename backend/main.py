@@ -128,7 +128,17 @@ def make_app(settings: Settings | None = None) -> FastAPI:
             return UserPreferences()          # sensible defaults on first login
         # Strip Cosmos system fields before returning
         clean = {k: v for k, v in doc.items() if not k.startswith("_") and k not in ("id", "user_id", "updated_at")}
-        return UserPreferences(**clean)
+        try:
+            return UserPreferences(**clean)
+        except Exception:
+            # Cosmos doc has stale/invalid field values (e.g. from older schema).
+            # Preserve the critical onboarding/identity fields so the user
+            # doesn't get stuck in the onboarding loop.
+            return UserPreferences(
+                name=str(clean.get("name", "there"))[:100],
+                onboarding_complete=bool(clean.get("onboarding_complete", False)),
+                walkthrough_complete=bool(clean.get("walkthrough_complete", False)),
+            )
 
     @app.put("/api/preferences", response_model=UserPreferences, tags=["preferences"])
     async def update_preferences(
@@ -365,6 +375,20 @@ def make_app(settings: Settings | None = None) -> FastAPI:
             )
             for d in docs
         ]
+
+    @app.delete("/api/documents/{doc_id}", tags=["documents"])
+    async def delete_document(doc_id: str, user_id: str = Depends(get_user_id)):
+        """Delete a single document by ID."""
+        deleted = await repo.delete_document(user_id, doc_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Document not found.")
+        return {"deleted": True, "id": doc_id}
+
+    @app.delete("/api/documents", tags=["documents"])
+    async def clear_all_documents(user_id: str = Depends(get_user_id)):
+        """Delete all documents for the user."""
+        count = await repo.delete_all_documents(user_id)
+        return {"cleared": True, "count": count}
 
     # ── Sessions ─────────────────────────────────────────────────────────── #
 

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { tasksActions } from '../store'
-import { uploadDocument, summariseStream, explainSentence, decompose, loadDocuments, chatStream } from '../utils/api'
+import { uploadDocument, summariseStream, explainSentence, decompose, loadDocuments, chatStream, deleteDocument } from '../utils/api'
 import { bionicify } from '../utils/bionic'
 
 // ── Constants ─────────────────────────────────────────────────────────────── //
@@ -257,6 +257,7 @@ export default function Documents() {
 
   // P3-4: saved documents browser
   const [savedDocs, setSavedDocs] = useState([])
+  const [deletingDocId, setDeletingDocId] = useState(null) // id in confirm-delete state
 
   // Detected document type — used to show contextual follow-up buttons
   const [docType, setDocType] = useState('unknown')
@@ -334,7 +335,7 @@ export default function Documents() {
       }
       setPhase('question')
     } catch {
-      setFileError("something went quiet. try again or paste the text directly.")
+      setFileError("Something went quiet. Try again or paste the text directly.")
     }
     setIsLoading(false)
   }
@@ -413,10 +414,12 @@ export default function Documents() {
     const q = qaInput.trim()
     if (!q || qaStreaming) return
 
-    // Build conversation history for Pebble (exclude first user message — that's the doc context)
+    // Build conversation history for Pebble
     const history = qaMessages.map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text }))
     const docContext = docText.slice(0, 1500)
-    const messageWithContext = history.length === 0
+    // Prepend doc context on first user question (history may have an initial AI message already)
+    const hasUserTurn = history.some(m => m.role === 'user')
+    const messageWithContext = !hasUserTurn
       ? `[document context: "${docContext}"]\n\n${q}`
       : q
 
@@ -449,7 +452,7 @@ export default function Documents() {
         }),
         onDone: () => setQaStreaming(false),
         onError: () => {
-          setQaMessages(prev => [...prev, { role: 'ai', text: "something went quiet. try asking again?" }])
+          setQaMessages(prev => [...prev, { role: 'ai', text: "Something went quiet. Try asking again?" }])
           setQaStreaming(false)
         },
       },
@@ -538,7 +541,7 @@ export default function Documents() {
                       onClick={() => fileInputRef.current?.click()}
                       aria-label="Upload file"
                     >
-                      + upload file
+                      + Upload file
                     </button>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>PDF, Word, image</span>
                   </div>
@@ -584,13 +587,12 @@ export default function Documents() {
                       whileHover={{ background: 'var(--accent-soft)' }}
                       transition={{ duration: 0.18 }}
                       style={{
-                        display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                        display: 'flex', alignItems: 'center', gap: '0.75rem',
                         padding: '0.75rem 1rem',
                         background: 'var(--bg-card)',
                         border: '1px solid var(--border)',
                         borderLeft: '3px solid var(--color-active)',
                         borderRadius: '10px',
-                        cursor: 'default',
                       }}
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -604,9 +606,37 @@ export default function Documents() {
                         )}
                       </div>
                       {doc.page_count && (
-                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0, marginTop: '0.15rem' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                           {doc.page_count}p
                         </span>
+                      )}
+                      {/* Delete — two-step confirm */}
+                      {deletingDocId === doc.id ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Remove?</span>
+                          <button
+                            onClick={async () => {
+                              try { await deleteDocument(doc.id) } catch {}
+                              setSavedDocs(prev => prev.filter(d => d.id !== doc.id))
+                              setDeletingDocId(null)
+                            }}
+                            style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 6, border: '1px solid var(--color-ai)', background: 'transparent', color: 'var(--color-ai)', cursor: 'pointer' }}
+                          >Yes</button>
+                          <button
+                            onClick={() => setDeletingDocId(null)}
+                            style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                          >No</button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setDeletingDocId(doc.id)}
+                          title="Remove document"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-muted)', opacity: 0.5, flexShrink: 0, lineHeight: 1 }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                          </svg>
+                        </button>
                       )}
                     </motion.div>
                   ))}

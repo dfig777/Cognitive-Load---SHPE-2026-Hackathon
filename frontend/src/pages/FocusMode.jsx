@@ -121,10 +121,10 @@ function StandaloneFocus({ startBreak = false }) {
           style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '2rem' }}
         >
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 400, color: 'var(--text-primary)', margin: 0 }}>
-            taking a break.
+            Taking a break.
           </h2>
           <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 28px' }}>
-            no rush.
+            No rush.
           </p>
           <BreathingCircle />
           <motion.button
@@ -139,7 +139,7 @@ function StandaloneFocus({ startBreak = false }) {
               border: 'none', cursor: 'pointer',
             }}
           >
-            i'm back
+            I'm back
           </motion.button>
         </motion.div>
       </div>
@@ -254,7 +254,7 @@ function StandaloneFocus({ startBreak = false }) {
           animate={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] } }}
           style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: '2rem', paddingBottom: '20vh' }}
         >
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, letterSpacing: '0.02em' }}>what are you focusing on?</p>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, letterSpacing: '0.02em' }}>What are you focusing on?</p>
           <input
             autoFocus
             type="text"
@@ -275,10 +275,10 @@ function StandaloneFocus({ startBreak = false }) {
           />
           <div style={{ display: 'flex', gap: 8 }}>
             <Btn color="active" onClick={() => { setFocusTopic(topicInput.trim()); setTopicSet(true) }}>
-              start
+              Start
             </Btn>
             <Btn color="ghost" onClick={() => setTopicSet(true)}>
-              skip
+              Skip
             </Btn>
           </div>
         </motion.div>
@@ -455,9 +455,9 @@ function StandaloneFocus({ startBreak = false }) {
           variants={{ initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } } }}
           style={{ display: 'flex', gap: 10, marginTop: 30 }}
         >
-          {status === 'idle'    && <Btn color="active" onClick={handleStart}>start</Btn>}
-          {status === 'running' && <><Btn color="paused" onClick={handlePause}>pause</Btn><Btn color="stop" onClick={handleStop}>stop</Btn></>}
-          {status === 'paused'  && <><Btn color="active" onClick={handleResume}>resume</Btn><Btn color="stop" onClick={handleStop}>stop</Btn></>}
+          {status === 'idle'    && <Btn color="active" onClick={handleStart}>Start</Btn>}
+          {status === 'running' && <><Btn color="paused" onClick={handlePause}>Pause</Btn><Btn color="stop" onClick={handleStop}>Stop</Btn></>}
+          {status === 'paused'  && <><Btn color="active" onClick={handleResume}>Resume</Btn><Btn color="stop" onClick={handleStop}>Stop</Btn></>}
         </motion.div>
 
         {/* ── Quote ── */}
@@ -1096,7 +1096,7 @@ export default function FocusMode() {
                   transition: 'opacity 0.2s ease',
                 }}
               >
-                done
+                Done
               </motion.button>
 
               {/* Skip / Break links */}
@@ -1110,7 +1110,7 @@ export default function FocusMode() {
                     padding: '6px 10px', minHeight: 36,
                   }}
                 >
-                  skip
+                  Skip
                 </button>
                 <button
                   onClick={handleBreak}
@@ -1121,7 +1121,7 @@ export default function FocusMode() {
                     padding: '6px 10px', minHeight: 36,
                   }}
                 >
-                  break
+                  Break
                 </button>
               </div>
 
@@ -1159,7 +1159,7 @@ export default function FocusMode() {
                 marginBottom: 8,
               }}
             >
-              i need a pause
+              I need a pause
             </button>
 
             {/* ── Energy check-in overlay ── */}
@@ -1191,16 +1191,16 @@ export default function FocusMode() {
 
                   <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
                     <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 400, color: 'var(--text-primary)', margin: 0 }}>
-                      quick check-in
+                      Quick check-in
                     </h3>
                     <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '0 0 20px' }}>
-                      how are you feeling?
+                      How are you feeling?
                     </p>
                     <div style={{ display: 'flex', gap: 10 }}>
                       {[
-                        { label: 'good',          bg: 'rgba(80,148,106,0.12)', border: 'rgba(80,148,106,0.2)',   color: 'var(--color-done)',   action: 'good' },
-                        { label: 'getting tired', bg: 'rgba(200,160,70,0.1)',  border: 'rgba(200,160,70,0.15)',  color: 'var(--color-ai)',     action: 'tired' },
-                        { label: 'too much',      bg: 'rgba(138,120,174,0.1)', border: 'rgba(138,120,174,0.15)', color: 'var(--color-paused)', action: 'escape' },
+                        { label: 'Good',          bg: 'rgba(80,148,106,0.12)', border: 'rgba(80,148,106,0.2)',   color: 'var(--color-done)',   action: 'good' },
+                        { label: 'Getting tired', bg: 'rgba(200,160,70,0.1)',  border: 'rgba(200,160,70,0.15)',  color: 'var(--color-ai)',     action: 'tired' },
+                        { label: 'Too much',      bg: 'rgba(138,120,174,0.1)', border: 'rgba(138,120,174,0.15)', color: 'var(--color-paused)', action: 'escape' },
                       ].map(btn => (
                         <button
                           key={btn.action}
@@ -1251,10 +1251,10 @@ export default function FocusMode() {
             }}
           >
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 400, color: 'var(--text-primary)', margin: 0 }}>
-              taking a break.
+              Taking a break.
             </h2>
             <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 28px' }}>
-              no rush.
+              No rush.
             </p>
 
             <BreathingCircle />
@@ -1280,7 +1280,7 @@ export default function FocusMode() {
                 border: 'none', cursor: 'pointer',
               }}
             >
-              i'm back
+              I'm back
             </motion.button>
           </motion.div>
         )}
@@ -1301,7 +1301,7 @@ export default function FocusMode() {
             {!microTimerActive ? (
               <>
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px' }}>
-                  one small thing:
+                  One small thing:
                 </p>
                 <h2 style={{
                   fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 400, color: 'var(--text-primary)',
@@ -1311,7 +1311,7 @@ export default function FocusMode() {
                   {microTask ?? currentTask?.task_name ?? '…'}
                 </h2>
                 <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '10px 0 28px', opacity: 0.65 }}>
-                  that's it. nothing else.
+                  That's it. Nothing else.
                 </p>
                 <motion.button
                   whileHover={{ filter: 'brightness(1.08)' }}
@@ -1325,7 +1325,7 @@ export default function FocusMode() {
                     border: 'none', cursor: 'pointer',
                   }}
                 >
-                  i can do this
+                  I can do this
                 </motion.button>
               </>
             ) : (
@@ -1352,7 +1352,7 @@ export default function FocusMode() {
                     border: 'none', cursor: 'pointer',
                   }}
                 >
-                  done
+                  Done
                 </button>
               </motion.div>
             )}
@@ -1414,7 +1414,7 @@ export default function FocusMode() {
                   fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer',
                 }}
               >
-                keep going
+                Keep going
               </button>
               <button
                 onClick={goToSummary}
@@ -1426,7 +1426,7 @@ export default function FocusMode() {
                   fontSize: 12, cursor: 'pointer',
                 }}
               >
-                i'm done for now
+                I'm done for now
               </button>
             </div>
           </motion.div>
@@ -1496,7 +1496,7 @@ export default function FocusMode() {
                   fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer',
                 }}
               >
-                back to tasks
+                Back to tasks
               </button>
               <button
                 onClick={() => { dispatch(tasksActions.clearFocus()); navigate('/') }}
@@ -1508,7 +1508,7 @@ export default function FocusMode() {
                   fontSize: 12, cursor: 'pointer',
                 }}
               >
-                talk to pebble
+                Talk to Pebble
               </button>
             </div>
           </motion.div>

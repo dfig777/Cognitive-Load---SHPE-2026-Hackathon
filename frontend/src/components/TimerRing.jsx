@@ -83,10 +83,10 @@ export default function TimerRing({ durationMinutes = 25, taskName = '', onCompl
 
       <div style={{ display: 'flex', gap: '0.5rem' }}>
         <button className="btn btn-ghost" style={{ padding: '0.4rem 0.9rem', fontSize: '0.82rem' }} onClick={() => setRunning(r => !r)}>
-          {running ? 'pause' : remaining === total ? 'start' : 'resume'}
+          {running ? 'Pause' : remaining === total ? 'Start' : 'Resume'}
         </button>
         <button className="btn btn-ghost" style={{ padding: '0.4rem 0.9rem', fontSize: '0.82rem' }} onClick={reset}>
-          reset
+          Reset
         </button>
       </div>
 

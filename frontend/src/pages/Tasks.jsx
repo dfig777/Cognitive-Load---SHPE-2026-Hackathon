@@ -92,9 +92,9 @@ function MoreMenu({ onClose, onEdit, onPause, onDelete, onChatRequest, taskName,
   }, [onClose, triggerRef])
 
   const menuItems = [
-    { id: 'edit',   dot: 'var(--color-upcoming)', label: 'edit task',  desc: 'Change text or time estimate' },
-    { id: 'pause',  dot: 'var(--color-paused)',   label: 'pause',      desc: 'Set aside without deleting' },
-    { id: 'delete', dot: 'var(--color-inactive)', label: 'delete',     desc: 'Remove permanently', divider: true },
+    { id: 'edit',   dot: 'var(--color-upcoming)', label: 'Edit task',  desc: 'Change text or time estimate' },
+    { id: 'pause',  dot: 'var(--color-paused)',   label: 'Pause',      desc: 'Set aside without deleting' },
+    { id: 'delete', dot: 'var(--color-inactive)', label: 'Delete',     desc: 'Remove permanently', divider: true },
   ]
 
   return (
@@ -146,35 +146,14 @@ function MoreMenu({ onClose, onEdit, onPause, onDelete, onChatRequest, taskName,
 
 // ── ActiveTaskCard ────────────────────────────────────────────────────────── //
 
-function ActiveTaskCard({ task, groupId, groupName, onComplete, onPause, onDelete, onChatRequest }) {
+function ActiveTaskCard({ task, groupId, groupName, onComplete, onPause, onDelete, onChatRequest, onOpenBreakdown }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [moreOpen, setMoreOpen]   = useState(false)
-  const [breaking, setBreaking]   = useState(false)
-  const [breakErr, setBreakErr]   = useState(null)
   const moreBtnRef = useRef(null)
   const [editing, setEditing]     = useState(false)
   const [editName, setEditName]   = useState(task.task_name)
   const [editMins, setEditMins]   = useState(String(task.duration_minutes || ''))
-
-  async function handleBreakDown() {
-    if (breaking) return
-    setBreaking(true)
-    setBreakErr(null)
-    try {
-      const res = await decompose({ goal: task.task_name, granularity: 'normal', reading_level: 'standard' })
-      if (res.flagged) { setBreakErr("couldn't break that down. try rephrasing?"); setBreaking(false); return }
-      const steps = res.steps || []
-      if (steps.length > 1) {
-        dispatch(tasksActions.replaceTask({ groupId, taskId: task.id, newTasks: steps }))
-      } else {
-        setBreakErr("that task is already as simple as it can be.")
-      }
-    } catch {
-      setBreakErr("something went quiet. try again?")
-    }
-    setBreaking(false)
-  }
 
   function saveEdit() {
     const name = editName.trim()
@@ -228,8 +207,8 @@ function ActiveTaskCard({ task, groupId, groupName, onComplete, onPause, onDelet
                   min={1}
                 />
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>min</span>
-                <button className="btn btn-primary" style={{ fontSize: '0.78rem', padding: '0.25rem 0.7rem', marginLeft: 'auto' }} onClick={saveEdit}>save</button>
-                <button className="btn btn-ghost"   style={{ fontSize: '0.78rem', padding: '0.25rem 0.7rem' }} onClick={() => setEditing(false)}>cancel</button>
+                <button className="btn btn-primary" style={{ fontSize: '0.78rem', padding: '0.25rem 0.7rem', marginLeft: 'auto' }} onClick={saveEdit}>Save</button>
+                <button className="btn btn-ghost"   style={{ fontSize: '0.78rem', padding: '0.25rem 0.7rem' }} onClick={() => setEditing(false)}>Cancel</button>
               </div>
             </div>
           ) : (
@@ -261,11 +240,10 @@ function ActiveTaskCard({ task, groupId, groupName, onComplete, onPause, onDelet
           )}
           <button
             className="btn btn-primary"
-            style={{ fontSize: '0.8rem', padding: '0.3rem 0.85rem', opacity: breaking ? 0.55 : 1 }}
-            onClick={handleBreakDown}
-            disabled={breaking}
+            style={{ fontSize: '0.8rem', padding: '0.3rem 0.85rem' }}
+            onClick={() => onOpenBreakdown?.({ task, groupId })}
           >
-            {breaking ? 'breaking down…' : 'break down'}
+            Break down
           </button>
           <button
             className="btn btn-ghost"
@@ -276,7 +254,7 @@ function ActiveTaskCard({ task, groupId, groupName, onComplete, onPause, onDelet
               navigate('/focus')
             }}
           >
-            focus on this
+            Focus on this
           </button>
           <button
             ref={moreBtnRef}
@@ -285,16 +263,9 @@ function ActiveTaskCard({ task, groupId, groupName, onComplete, onPause, onDelet
             onClick={() => setMoreOpen(o => !o)}
             aria-expanded={moreOpen}
           >
-            more ···
+            More ···
           </button>
         </div>
-      )}
-
-      {/* Break-down error */}
-      {breakErr && !editing && (
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-ai)', marginTop: '0.4rem', marginLeft: '1.85rem' }}>
-          {breakErr}
-        </p>
       )}
 
       {/* AI nudge */}
@@ -374,12 +345,13 @@ function UpcomingTaskRow({ task, dimmed, onComplete, onMakeActive }) {
 
 // ── TaskGroupCard ─────────────────────────────────────────────────────────── //
 
-function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, onStartNewGroup, onChatRequest }) {
+function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, onStartNewGroup, onChatRequest, onOpenBreakdown }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   // Local active task override — user can tap any upcoming to make it active
   const [activeOverrideId, setActiveOverrideId] = useState(null)
+  const [confirmDelete,    setConfirmDelete]    = useState(false)
 
   const activeTasks    = group.tasks.filter(t => !t.done && !t.paused)
   const completedTasks = group.tasks.filter(t => t.done)
@@ -420,49 +392,122 @@ function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, 
         overflow: 'hidden',
       }}
     >
-      {/* Header — always visible */}
-      <motion.button
-        onClick={onToggle}
-        whileHover={{ background: 'var(--accent-soft)' }}
-        transition={{ duration: 0.18 }}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
-          padding: '0.85rem 1.1rem', background: 'none', border: 'none',
-          cursor: 'pointer', textAlign: 'left',
-        }}
-        aria-expanded={isOpen}
-      >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.1rem' }}>
-            {group.name}
-          </div>
-          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
-            {doneCount} of {totalUnpaused} done
-            {timeLeft > 0 && ` · ${formatMinutes(timeLeft)}`}
-          </div>
-        </div>
-
-        {/* Mini progress bar */}
-        <div style={{ width: 56, height: 3, background: 'var(--border)', borderRadius: 99, flexShrink: 0 }}>
-          <motion.div
-            animate={{ width: totalUnpaused > 0 ? `${(doneCount / totalUnpaused) * 100}%` : '0%' }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            style={{
-              height: '100%', borderRadius: 99,
-              background: allDone ? 'var(--color-done)' : 'var(--color-active)',
-            }}
-          />
-        </div>
-
-        {/* Chevron */}
-        <motion.span
-          animate={{ rotate: isOpen ? 90 : 0 }}
-          transition={{ duration: 0.22 }}
-          style={{ color: 'var(--text-muted)', fontSize: '0.82rem', flexShrink: 0, lineHeight: 1 }}
+      {/* Header — toggle area + delete button */}
+      <div style={{ display: 'flex', alignItems: 'stretch' }}>
+        <button
+          onClick={onToggle}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-soft)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+          style={{
+            flex: 1, display: 'flex', alignItems: 'center', gap: '0.75rem',
+            padding: '0.85rem 1.1rem', background: 'none', border: 'none',
+            cursor: 'pointer', textAlign: 'left', transition: 'background 0.18s ease', minWidth: 0,
+          }}
+          aria-expanded={isOpen}
         >
-          ›
-        </motion.span>
-      </motion.button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.1rem' }}>
+              {group.name}
+            </div>
+            <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+              {doneCount} of {totalUnpaused} done
+              {timeLeft > 0 && ` · ${formatMinutes(timeLeft)}`}
+            </div>
+          </div>
+
+          {/* Mini progress bar */}
+          <div style={{ width: 56, height: 3, background: 'var(--border)', borderRadius: 99, flexShrink: 0 }}>
+            <motion.div
+              animate={{ width: totalUnpaused > 0 ? `${(doneCount / totalUnpaused) * 100}%` : '0%' }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              style={{ height: '100%', borderRadius: 99, background: allDone ? 'var(--color-done)' : 'var(--color-active)' }}
+            />
+          </div>
+
+          {/* Chevron */}
+          <motion.span
+            animate={{ rotate: isOpen ? 90 : 0 }}
+            transition={{ duration: 0.22 }}
+            style={{ color: 'var(--text-muted)', fontSize: '0.82rem', flexShrink: 0, lineHeight: 1 }}
+          >
+            ›
+          </motion.span>
+        </button>
+
+        {/* Trash button */}
+        <button
+          onClick={e => { e.stopPropagation(); setConfirmDelete(true) }}
+          aria-label="Delete group"
+          style={{
+            background: 'none', border: 'none', borderLeft: '1px solid var(--border)',
+            cursor: 'pointer', padding: '0 0.85rem', color: 'var(--text-muted)',
+            flexShrink: 0, transition: 'background 0.18s ease, color 0.18s ease',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(200,148,80,0.08)'; e.currentTarget.style.color = 'var(--color-ai)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--text-muted)' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6M14 11v6" />
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Delete confirmation strip */}
+      <AnimatePresence>
+        {confirmDelete && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: 'hidden', borderTop: '1px solid rgba(200,148,80,0.2)' }}
+          >
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '0.65rem 1.1rem',
+              background: 'rgba(200,148,80,0.06)',
+              gap: '0.75rem',
+            }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                delete <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>"{group.name}"</strong> and all its tasks?
+              </span>
+              <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                <button
+                  onClick={() => {
+                    dispatch(tasksActions.deleteGroup(group.id))
+                  }}
+                  style={{
+                    fontSize: '0.78rem', padding: '4px 14px', borderRadius: 7,
+                    border: '1px solid var(--color-ai)', background: 'transparent',
+                    color: 'var(--color-ai)', cursor: 'pointer', fontWeight: 500,
+                    transition: 'background 0.15s ease',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(200,148,80,0.12)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  yes, delete
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  style={{
+                    fontSize: '0.78rem', padding: '4px 12px', borderRadius: 7,
+                    border: '1px solid var(--border)', background: 'transparent',
+                    color: 'var(--text-muted)', cursor: 'pointer',
+                    transition: 'background 0.15s ease',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent-soft)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  cancel
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Expandable body */}
       <AnimatePresence initial={false}>
@@ -487,17 +532,17 @@ function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, 
                   }}
                 >
                   <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--color-done)', marginBottom: '0.3rem' }}>
-                    you finished everything here. that's real progress.
+                    You finished everything here. That's real progress.
                   </div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                     Total time: {formatMinutes(group.tasks.reduce((s, t) => s + (t.duration_minutes || 0), 0))}
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.75rem' }}>
                     <button className="btn btn-ghost" style={{ fontSize: '0.8rem', padding: '0.3rem 0.85rem' }} onClick={() => { onToggle(); onStartNewGroup?.() }}>
-                      start another group
+                      Start another group
                     </button>
                     <button className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '0.3rem 0.85rem' }} onClick={() => navigate('/focus', { state: { startBreak: true } })}>
-                      take a break
+                      Take a break
                     </button>
                   </div>
                 </motion.div>
@@ -514,7 +559,7 @@ function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, 
                         navigate('/focus')
                       }}
                     >
-                      start focus mode
+                      Start focus mode
                     </button>
                   </div>
 
@@ -540,6 +585,7 @@ function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, 
                           onPause={() => dispatch(tasksActions.pauseTask({ groupId: group.id, taskId: activeTask.id }))}
                           onDelete={() => dispatch(tasksActions.deleteTask({ groupId: group.id, taskId: activeTask.id }))}
                           onChatRequest={onChatRequest}
+                          onOpenBreakdown={onOpenBreakdown}
                         />
                       </div>
                     )}
@@ -575,6 +621,243 @@ function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, 
         )}
       </AnimatePresence>
     </motion.div>
+  )
+}
+
+// ── BreakdownChatPanel ────────────────────────────────────────────────────── //
+
+function BreakdownChatPanel({ task, groupId, onClose, onReplaceTask }) {
+  const prefs        = useSelector(s => s.prefs)
+  const [messages,   setMessages]   = useState([])
+  const [input,      setInput]      = useState('')
+  const [streaming,  setStreaming]  = useState(false)
+  const [streamText, setStreamText] = useState('')
+  const [applying,   setApplying]   = useState(false)
+  const [applyErr,   setApplyErr]   = useState(null)
+  const bottomRef   = useRef(null)
+  const initialSent = useRef(false)
+  const genId       = () => Math.random().toString(36).slice(2, 10)
+
+  const stripMd = t => t
+    .replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
+    .replace(/^#+\s+/gm, '').replace(/^[-*]\s+/gm, '')
+
+  async function sendChat(text, history = []) {
+    setStreaming(true)
+    setStreamText('')
+    let accumulated = ''
+    await chatStream(
+      {
+        message: text,
+        is_greeting: false,
+        current_page: 'tasks',
+        conversation_history: history.slice(-12).map(m => ({ role: m.role, content: m.content })),
+      },
+      {
+        onToken: t => { accumulated += t; setStreamText(accumulated) },
+        onReplace: content => {
+          accumulated = content
+          setStreamText('')
+          setMessages(prev => [...prev, { id: genId(), role: 'assistant', content }])
+        },
+        onDone: () => {
+          if (accumulated) setMessages(prev => [...prev, { id: genId(), role: 'assistant', content: accumulated }])
+          setStreamText('')
+          setStreaming(false)
+          setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+        },
+        onError: msg => {
+          setMessages(prev => [...prev, { id: genId(), role: 'assistant', content: msg || 'something went quiet. try again?' }])
+          setStreamText('')
+          setStreaming(false)
+        },
+      },
+    )
+  }
+
+  // On mount: seed Pebble with the task context — Pebble's response is the first
+  // visible message (the trigger is hidden so the chat opens with Pebble already helping)
+  useEffect(() => {
+    if (initialSent.current) return
+    initialSent.current = true
+    const seed = `I want to break down this task: "${task.task_name}"${task.duration_minutes > 0 ? ` (about ${task.duration_minutes} minutes)` : ''}. Walk me through the smaller steps to get this done.`
+    sendChat(seed, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleSend() {
+    const text = input.trim()
+    if (!text || streaming) return
+    const userMsg = { id: genId(), role: 'user', content: text }
+    const next = [...messages, userMsg]
+    setMessages(next)
+    setInput('')
+    await sendChat(text, next)
+  }
+
+  async function handleApply() {
+    if (applying) return
+    setApplying(true)
+    setApplyErr(null)
+    try {
+      const res = await decompose({
+        goal: task.task_name,
+        granularity: prefs.granularity || 'normal',
+        reading_level: prefs.readingLevel || 'standard',
+      })
+      if (res.flagged) { setApplyErr("Couldn't break that down."); setApplying(false); return }
+      const steps = res.steps || []
+      if (steps.length > 1) {
+        onReplaceTask(groupId, task.id, steps)
+      } else {
+        setApplyErr("That task is already as simple as it can be.")
+        setApplying(false)
+      }
+    } catch {
+      setApplyErr("Something went quiet. Try again?")
+      setApplying(false)
+    }
+  }
+
+  const userInitial = (prefs.name && prefs.name !== 'there') ? prefs.name.charAt(0).toUpperCase() : 'Y'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '1rem 1.25rem 0.85rem', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+              breaking down
+            </div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 400, color: 'var(--text-primary)', lineHeight: 1.35 }}>
+              {task.task_name}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-muted)', fontSize: '1.35rem', lineHeight: 1,
+              padding: '0 0.2rem', flexShrink: 0, transition: 'color 0.2s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+          >
+            ×
+          </button>
+        </div>
+        {/* Quick apply button */}
+        <div style={{ marginTop: '0.7rem' }}>
+          <button
+            className="btn btn-primary"
+            style={{ width: '100%', fontSize: '0.82rem', padding: '0.42rem 1rem', opacity: applying ? 0.55 : 1 }}
+            onClick={handleApply}
+            disabled={applying}
+          >
+            {applying ? 'Breaking down…' : 'Break it down for me →'}
+          </button>
+          {applyErr && (
+            <p style={{ fontSize: '0.76rem', color: 'var(--color-ai)', marginTop: '0.3rem', textAlign: 'center' }}>
+              {applyErr}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Chat thread */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+        {messages.map(msg => (
+          <motion.div
+            key={msg.id}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28 }}
+            style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}
+          >
+            {msg.role === 'assistant' ? (
+              <motion.div
+                animate={{ scale: [0.88, 1.08, 0.88], opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ width: 7, height: 7, borderRadius: '50%', background: '#5A8A80', flexShrink: 0, marginTop: '0.85rem' }}
+              />
+            ) : (
+              <div style={{
+                width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: '0.2rem',
+                background: 'rgba(42,122,144,0.12)', border: '1px solid rgba(42,122,144,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.62rem', fontWeight: 600, color: 'var(--color-active)',
+              }}>
+                {userInitial}
+              </div>
+            )}
+            <div style={{
+              maxWidth: '84%',
+              background: msg.role === 'assistant' ? 'rgba(200,148,80,0.07)' : 'rgba(42,122,144,0.08)',
+              border: `1px solid ${msg.role === 'assistant' ? 'rgba(200,148,80,0.16)' : 'rgba(42,122,144,0.16)'}`,
+              borderRadius: msg.role === 'assistant' ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
+              padding: '0.65rem 0.9rem',
+              fontSize: '0.85rem', color: 'var(--text-primary)',
+              lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            }}>
+              {msg.role === 'assistant' ? stripMd(msg.content) : msg.content}
+            </div>
+          </motion.div>
+        ))}
+
+        {/* In-flight streaming bubble */}
+        {streaming && (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+            <motion.div
+              animate={{ scale: [0.88, 1.08, 0.88], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ width: 7, height: 7, borderRadius: '50%', background: '#5A8A80', flexShrink: 0, marginTop: '0.85rem' }}
+            />
+            <div style={{
+              maxWidth: '84%', background: 'rgba(200,148,80,0.07)',
+              border: '1px solid rgba(200,148,80,0.16)', borderRadius: '16px 16px 16px 4px',
+              padding: '0.65rem 0.9rem', fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.65,
+            }}>
+              {streamText ? stripMd(streamText) : (
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                  {[0,1,2].map(i => (
+                    <motion.span key={i}
+                      animate={{ scale: [0.85,1.15,0.85], opacity: [0.35,0.9,0.35] }}
+                      transition={{ duration: 2.2, delay: i*0.35, repeat: Infinity, ease: 'easeInOut' }}
+                      style={{ display: 'block', width: 5, height: 5, borderRadius: '50%', background: '#5A8A80' }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div style={{ padding: '0.6rem 1.25rem 1rem', flexShrink: 0, borderTop: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+          <textarea
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+            placeholder="ask pebble anything..."
+            rows={2}
+            disabled={streaming}
+            style={{ flex: 1, resize: 'none', borderRadius: 10, fontSize: '0.85rem', opacity: streaming ? 0.55 : 1, transition: 'opacity 0.25s ease' }}
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleSend}
+            disabled={!input.trim() || streaming}
+            style={{ flexShrink: 0, fontSize: '0.82rem', padding: '0.4rem 0.85rem' }}
+          >
+            send
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -630,6 +913,9 @@ export default function Tasks() {
 
   // Paused section
   const [pausedOpen, setPausedOpen] = useState(false)
+
+  // Breakdown chat panel — set to { task, groupId } to open, null to close
+  const [breakdownTask, setBreakdownTask] = useState(null)
 
   // Pebble chat thread (persistent during session)
   const [qaMessages,  setQaMessages]  = useState([])   // [{id,role,content}]
@@ -697,7 +983,7 @@ export default function Tasks() {
         reading_level: prefs.readingLevel || 'standard',
       })
       if (res.flagged) {
-        setAddMsg({ type: 'error', text: "can't process that right now. try rephrasing?" })
+        setAddMsg({ type: 'error', text: "Can't process that right now. Try rephrasing?" })
         setAddLoading(false)
         return
       }
@@ -709,16 +995,16 @@ export default function Tasks() {
           motivation_nudge: steps[0]?.motivation_nudge || '',
         }))
         setPendingExpand('my-tasks')
-        setAddMsg({ type: 'ai', text: "added to your tasks." })
+        setAddMsg({ type: 'ai', text: "Added to your tasks." })
       } else {
         const groupName = res.group_name || (text.length > 36 ? text.slice(0, 34) + '…' : text)
         dispatch(tasksActions.addGroup({ name: groupName, source: 'ai', tasks: steps }))
         setPendingExpand('last')
-        setAddMsg({ type: 'ai', text: `that's a bigger one. i broke it into ${steps.length} steps.` })
+        setAddMsg({ type: 'ai', text: `That's a bigger one. I broke it into ${steps.length} steps.` })
       }
       setAddInput('')
     } catch {
-      setAddMsg({ type: 'error', text: "something went quiet. try again?" })
+      setAddMsg({ type: 'error', text: "Something went quiet. Try again?" })
     }
     setAddLoading(false)
     // Auto-clear the AI message after 4 seconds — clear previous timer first
@@ -768,7 +1054,7 @@ export default function Tasks() {
           setTimeout(() => qaChatRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 50)
         },
         onError: msg => {
-          setQaMessages(prev => [...prev, { id: genQaId(), role: 'assistant', content: msg || 'something went quiet. want to try again?' }])
+          setQaMessages(prev => [...prev, { id: genQaId(), role: 'assistant', content: msg || 'Something went quiet. Want to try again?' }])
           setQaStream('')
           setQaStreaming(false)
         },
@@ -777,7 +1063,10 @@ export default function Tasks() {
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden' }}>
+
+    {/* ── Left panel: task list ─────────────────────────────────────── */}
+    <div style={{ flex: 1, overflowY: 'auto', minWidth: 0 }}>
     <motion.div
       variants={pageVariants}
       initial="initial"
@@ -869,7 +1158,7 @@ export default function Tasks() {
           onClick={() => setTimeFilterActive(a => !a)}
           aria-pressed={timeFilterActive}
         >
-          {timeFilterActive ? 'clear filter' : 'show me what fits'}
+          {timeFilterActive ? 'Clear filter' : 'Show me what fits'}
         </button>
       </motion.div>
 
@@ -906,6 +1195,7 @@ export default function Tasks() {
                 timeFilter={timeFilter}
                 timeFilterActive={timeFilterActive}
                 onChatRequest={handleChatRequest}
+                onOpenBreakdown={({ task, groupId }) => setBreakdownTask({ task, groupId })}
                 onStartNewGroup={() => {
                   setTimeout(() => {
                     addInputRef.current?.focus()
@@ -968,7 +1258,7 @@ export default function Tasks() {
                           style={{ fontSize: '0.78rem', padding: '0.2rem 0.65rem', color: 'var(--color-active)', borderColor: 'var(--color-active)' }}
                           onClick={() => dispatch(tasksActions.resumeTask({ groupId: parentGroup?.id, taskId: t.id }))}
                         >
-                          resume
+                          Resume
                         </button>
                       </div>
                     )
@@ -1113,6 +1403,40 @@ export default function Tasks() {
         </motion.div>
       )}
     </motion.div>
+    </div>
+
+    {/* ── Right panel: breakdown chat ────────────────────────────────── */}
+    <AnimatePresence>
+      {breakdownTask && (
+        <motion.div
+          key="breakdown-panel"
+          initial={{ x: '100%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '100%', opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+          style={{
+            width: 380,
+            flexShrink: 0,
+            borderLeft: '1px solid var(--border)',
+            background: 'var(--bg-primary)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
+          <BreakdownChatPanel
+            task={breakdownTask.task}
+            groupId={breakdownTask.groupId}
+            onClose={() => setBreakdownTask(null)}
+            onReplaceTask={(gId, taskId, newTasks) => {
+              dispatch(tasksActions.replaceTask({ groupId: gId, taskId, newTasks }))
+              setBreakdownTask(null)
+            }}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
+
     </div>
   )
 }

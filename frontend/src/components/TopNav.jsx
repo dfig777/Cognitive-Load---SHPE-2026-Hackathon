@@ -1,5 +1,6 @@
 import { NavLink, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useSelector } from 'react-redux'
 
 const NAV_ITEMS = [
   { to: '/',          label: 'home',      end: true,  dataNav: null         },
@@ -9,6 +10,9 @@ const NAV_ITEMS = [
 ]
 
 export default function TopNav() {
+  const name = useSelector(s => s.prefs.name)
+  const initial = (name && name !== 'there') ? name.charAt(0).toUpperCase() : null
+
   return (
     <motion.header
       className="top-nav"
@@ -69,23 +73,30 @@ export default function TopNav() {
         >
           <GearIcon />
         </Link>
-        {/* Avatar: ocean sage dot — never a letter per brand spec */}
-        <div
+        {/* User avatar — shows initial when name is known, otherwise the Pebble dot */}
+        <Link
+          to="/settings"
           className="top-nav__avatar"
-          aria-label="User profile"
+          aria-label="Profile & settings"
           style={{
             width: 28,
             height: 28,
             borderRadius: '50%',
-            background: 'rgba(90,138,128,0.15)',
-            border: '1.5px solid rgba(90,138,128,0.35)',
+            background: initial ? 'rgba(42,122,144,0.12)' : 'rgba(90,138,128,0.15)',
+            border: initial ? '1.5px solid rgba(42,122,144,0.28)' : '1.5px solid rgba(90,138,128,0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            textDecoration: 'none',
+            transition: 'background 0.2s ease, border-color 0.2s ease',
+            cursor: 'pointer',
           }}
         >
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5A8A80', display: 'block' }} />
-        </div>
+          {initial
+            ? <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-active)', letterSpacing: '0.02em' }}>{initial}</span>
+            : <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#5A8A80', display: 'block' }} />
+          }
+        </Link>
       </div>
     </motion.header>
   )

@@ -145,6 +145,91 @@
 }
 
 /* ── Manual user overrides (come after time themes — always win) ────────── */
+/* These mirror the time-of-day themes but are triggered by user selection    */
+
+[data-theme="morning"] {
+  --bg: radial-gradient(ellipse at 50% 38%, #FFF8F2 0%, #F8F0E8 18%, #F4EBE4 34%, #F0E6E0 50%, #EDE2DC 68%, #F0E6E0 85%, #F2E8E2 100%);
+  --bg-primary: #F4EBE4;
+  --bg-card: rgba(255,253,250,0.58);
+  --bg-sidebar: rgba(242,236,228,0.82);
+  --text-primary: #3A3024;
+  --text-secondary: #8A7860;
+  --text-muted: rgba(138,120,96,0.7);
+  --accent: #5A9AA4;
+  --accent-soft: rgba(90,154,164,0.12);
+  --accent-2: #58A078;
+  --accent-2-soft: rgba(88,160,120,0.12);
+  --border: rgba(226,214,202,0.45);
+  --color-done: #58A078;
+  --color-active: #5A9AA4;
+  --color-upcoming: #6892B0;
+  --color-paused: #9686AE;
+  --color-ai: #DCA05A;
+}
+
+[data-theme="afternoon"] {
+  --bg: radial-gradient(ellipse at 50% 40%, #FFFAF5 0%, #F5EDE4 35%, #EAE4DC 65%, #F0EBE5 100%);
+  --bg-primary: #F5EDE4;
+  --bg-card: rgba(255,255,255,0.68);
+  --bg-sidebar: rgba(240,234,226,0.82);
+  --text-primary: #2A2622;
+  --text-secondary: #7A7060;
+  --text-muted: #8A7E6E;
+  --accent: #2A7A90;
+  --accent-soft: rgba(42,122,144,0.12);
+  --accent-2: #50946A;
+  --accent-2-soft: rgba(80,148,106,0.12);
+  --border: rgba(218,208,196,0.5);
+  --color-done: #50946A;
+  --color-active: #2A7A90;
+  --color-upcoming: #6A96B8;
+  --color-paused: #9A88B4;
+  --color-ai: #E0A060;
+}
+
+[data-theme="evening"] {
+  --bg: radial-gradient(ellipse at 50% 42%, #F6F0EE 0%, #F0E8E6 18%, #EAE2E0 34%, #E6DCDA 50%, #E2D8D8 68%, #E6E0DE 85%, #E8E2E0 100%);
+  --bg-primary: #EAE2E0;
+  --bg-card: rgba(255,252,250,0.55);
+  --bg-sidebar: rgba(234,228,226,0.82);
+  --text-primary: #2E2828;
+  --text-secondary: #7A6E70;
+  --text-muted: rgba(122,110,112,0.8);
+  --accent: #3A7E8E;
+  --accent-soft: rgba(58,126,142,0.12);
+  --accent-2: #528C64;
+  --accent-2-soft: rgba(82,140,100,0.12);
+  --border: rgba(214,206,204,0.45);
+  --color-done: #528C64;
+  --color-active: #3A7E8E;
+  --color-upcoming: #6488A8;
+  --color-paused: #8A78A4;
+  --color-ai: #C89450;
+}
+
+[data-theme="night"] {
+  --bg: radial-gradient(ellipse at 50% 46%, #2C2434 0%, #241E2C 25%, #201A26 45%, #1C1822 65%, #1E1A22 85%, #201C24 100%);
+  --bg-primary: #201A26;
+  --bg-card: rgba(40,34,48,0.7);
+  --bg-sidebar: rgba(32,26,40,0.85);
+  --surface: rgba(44,36,56,0.92);
+  --text-primary: #EDE8EC;
+  --text-secondary: #C0B8C4;
+  --text-muted: #9A90A0;
+  --accent: #44A0AE;
+  --accent-soft: rgba(68,160,174,0.18);
+  --accent-2: #50A86E;
+  --accent-2-soft: rgba(80,168,110,0.18);
+  --border: rgba(80,70,90,0.5);
+  --shadow: 0 2px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+  --color-done: #50A86E;
+  --color-active: #44A0AE;
+  --color-upcoming: #6A8AB4;
+  --color-paused: #8A78AE;
+  --color-ai: #C8A046;
+  --color-inactive: #6A5E6E;
+}
 
 [data-theme="dark"] {
   --bg: radial-gradient(ellipse at 50% 46%, #2C2434 0%, #241E2C 25%, #201A26 45%, #1C1822 65%, #1E1A22 85%, #201C24 100%);

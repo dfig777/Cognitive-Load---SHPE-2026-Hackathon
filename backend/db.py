@@ -173,6 +173,43 @@ class CosmosRepo:
         result = await container.upsert_item(doc)
         return result
 
+    async def delete_document(self, user_id: str, doc_id: str) -> bool:
+        """Delete a single document by ID. Returns True if deleted, False if not found."""
+        db = self._client.get_database_client(self._db_name)
+        container = db.get_container_client(self._docs_container_name)
+        try:
+            await container.delete_item(item=doc_id, partition_key=user_id)
+            return True
+        except exceptions.CosmosResourceNotFoundError:
+            return False
+
+    async def delete_all_documents(self, user_id: str) -> int:
+        """Delete all documents for a user. Returns count deleted."""
+        db = self._client.get_database_client(self._db_name)
+        container = db.get_container_client(self._docs_container_name)
+        query = "SELECT c.id FROM c WHERE c.user_id = @uid"
+        count = 0
+        async for item in container.query_items(
+            query=query,
+            parameters=[{"name": "@uid", "value": user_id}],
+        ):
+            try:
+                await container.delete_item(item=item["id"], partition_key=user_id)
+                count += 1
+            except Exception:
+                pass
+        return count
+
+    async def delete_conversation(self, user_id: str) -> None:
+        """Delete the stored conversation history for a user."""
+        db = self._client.get_database_client(self._db_name)
+        container = db.get_container_client(self._conv_container_name)
+        doc_id = f"{user_id}_conversation"
+        try:
+            await container.delete_item(item=doc_id, partition_key=user_id)
+        except exceptions.CosmosResourceNotFoundError:
+            pass
+
     async def get_document_text(self, user_id: str, doc_id: str) -> str | None:
         """Fetch full extracted text for a specific document."""
         db = self._client.get_database_client(self._db_name)

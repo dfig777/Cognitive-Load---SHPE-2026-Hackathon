@@ -163,6 +163,10 @@ const tasksSlice = createSlice({
       group.tasks.push(task)
     },
 
+    deleteGroup(state, action) {
+      state.groups = state.groups.filter(g => g.id !== action.payload)
+    },
+
     setFocusGroup(state, action) { state.focusGroupId = action.payload },
     setFocusTask(state, action)  { state.focusTaskId  = action.payload },
     clearFocus(state)            { state.focusGroupId = null; state.focusTaskId = null },
