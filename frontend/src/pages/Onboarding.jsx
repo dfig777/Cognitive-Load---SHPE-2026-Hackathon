@@ -145,8 +145,8 @@ function DescribeInput({ onSubmit }) {
     >
       <form onSubmit={e => { e.preventDefault(); onSubmit(val) }} style={{ display: 'flex', gap: 8 }}>
         <input ref={ref} value={val} onChange={e => setVal(e.target.value)}
-          placeholder="Describe what works best for you..." style={{ flex: 1, borderRadius: 12, fontSize: 13 }} />
-        <button type="submit" className="btn btn-primary" style={{ flexShrink: 0, fontSize: 13 }}>Done</button>
+          placeholder="describe what works best for you..." style={{ flex: 1, borderRadius: 12, fontSize: 13 }} />
+        <button type="submit" className="btn btn-primary" style={{ flexShrink: 0, fontSize: 13 }}>done</button>
       </form>
     </motion.div>
   )

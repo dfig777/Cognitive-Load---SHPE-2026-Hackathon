@@ -899,7 +899,7 @@ export default function FocusMode() {
     setAppState('escape')
 
     if (!currentTask) return
-    const fallback = `Start: ${currentTask.task_name}`
+    const fallback = `start: ${currentTask.task_name}`
     // Call decompose for single micro-task
     decompose({ goal: currentTask.task_name, granularity: 'micro', reading_level: 'simple' })
       .then(r => {

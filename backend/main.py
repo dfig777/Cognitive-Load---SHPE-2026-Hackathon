@@ -160,7 +160,7 @@ def make_app(settings: Settings | None = None) -> FastAPI:
         except Exception as exc:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="We ran into a small hiccup — please try again in a moment.",
+                detail="something went quiet — please try again in a moment.",
             ) from exc
 
         output_text = " ".join(
@@ -194,7 +194,7 @@ def make_app(settings: Settings | None = None) -> FastAPI:
                     # Server-Sent Events format
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
             except Exception:
-                yield f"data: {json.dumps({'error': 'Something went quiet — please try again.'})}\n\n"
+                yield f"data: {json.dumps({'error': 'something went quiet — please try again.'})}\n\n"
             yield "data: [DONE]\n\n"
 
         return StreamingResponse(
@@ -261,8 +261,8 @@ def make_app(settings: Settings | None = None) -> FastAPI:
                     "flagged": True,
                     "category": "document_error",
                     "message": (
-                        "That file is too large (max 20 MB). "
-                        "Try splitting it into smaller sections."
+                        "that file is too large (max 20 MB). "
+                        "try splitting it into smaller sections."
                     ),
                 },
             )
@@ -275,8 +275,8 @@ def make_app(settings: Settings | None = None) -> FastAPI:
                     "flagged": True,
                     "category": "unsupported_file_type",
                     "message": (
-                        "We support PDF, Word (.docx), and image files (PNG, JPG, TIFF). "
-                        "Could you try converting your document to one of those formats?"
+                        "we support PDF, Word (.docx), and image files (PNG, JPG, TIFF). "
+                        "could you try converting your document to one of those formats?"
                     ),
                 },
             )
@@ -375,13 +375,16 @@ def make_app(settings: Settings | None = None) -> FastAPI:
     ):
         doc = await repo.create_session(user_id, body.model_dump())
         track_event("session_created", {
-            "step_count": len(body.steps),
+            "tasks_completed": body.tasks_completed,
+            "total_minutes": body.total_minutes,
             "user_id": user_id,
         })
         return SessionItem(
             id=doc["id"],
-            goal=doc["goal"],
-            steps=[TaskStep(**s) for s in doc["steps"]],
+            tasks_completed=doc.get("tasks_completed", 0),
+            tasks_skipped=doc.get("tasks_skipped", 0),
+            total_minutes=doc.get("total_minutes", 0),
+            group_name=doc.get("group_name", "Focus Session"),
             created_at=doc["created_at"],
         )
 
@@ -391,8 +394,10 @@ def make_app(settings: Settings | None = None) -> FastAPI:
         return [
             SessionItem(
                 id=d["id"],
-                goal=d["goal"],
-                steps=[TaskStep(**s) for s in d["steps"]],
+                tasks_completed=d.get("tasks_completed", 0),
+                tasks_skipped=d.get("tasks_skipped", 0),
+                total_minutes=d.get("total_minutes", 0),
+                group_name=d.get("group_name", "Focus Session"),
                 created_at=d["created_at"],
             )
             for d in docs

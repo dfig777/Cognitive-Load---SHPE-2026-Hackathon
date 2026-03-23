@@ -18,7 +18,7 @@ const PLACEHOLDERS = [
 
 const QUICK_ACTIONS = [
   {
-    label: 'I have a document',
+    label: 'i have a document',
     hint:  'upload a PDF or Word doc to extract tasks and simplify text',
     route: '/documents',
     bg:    'var(--accent-soft)',

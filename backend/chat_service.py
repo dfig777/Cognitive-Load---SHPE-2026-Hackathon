@@ -248,7 +248,7 @@ class ChatService:
                 yield _sse({"type": "token", "content": token})
         except Exception as exc:
             logger.error("chat_service.stream_error", extra={"error": str(exc)})
-            yield _sse({"type": "token", "content": "Something went quiet. Want to try again?"})
+            yield _sse({"type": "token", "content": "something went quiet. want to try again?"})
             yield _sse({"type": "done"})
             return
 
@@ -263,9 +263,9 @@ class ChatService:
         except Exception:
             needs_replacement = True
             replacement_text = (
-                "Let me rephrase that. "
-                "I want to make sure I'm being helpful. "
-                "What would be most useful right now?"
+                "let me rephrase that. "
+                "i want to make sure i'm being helpful. "
+                "what would be most useful right now?"
             )
 
         if needs_replacement:
@@ -637,10 +637,13 @@ def _fmt_block_6(signals: dict) -> str:
 def _fmt_block_7(sessions: list[dict]) -> str:
     lines = ["Recent session history:"]
     for s in sessions[:3]:
-        goal = s.get("goal", "unnamed goal")
-        steps = s.get("steps", [])
+        # Support both old (goal/steps) and new (group_name/tasks_completed) session schema
+        group_name = s.get("group_name") or s.get("goal", "focus session")
+        tasks_completed = s.get("tasks_completed", len(s.get("steps", [])))
+        total_minutes = s.get("total_minutes", 0)
         created = (s.get("created_at") or "")[:10]
-        lines.append(f'- Worked on "{goal}", {len(steps)} tasks, {created}')
+        min_label = f", {total_minutes} min" if total_minutes else ""
+        lines.append(f'- Worked on "{group_name}", {tasks_completed} tasks{min_label}, {created}')
     return "\n".join(lines)
 
 

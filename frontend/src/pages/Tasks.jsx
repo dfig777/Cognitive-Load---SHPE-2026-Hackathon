@@ -285,7 +285,7 @@ function ActiveTaskCard({ task, groupId, groupName, onComplete, onPause, onDelet
             onClick={() => setMoreOpen(o => !o)}
             aria-expanded={moreOpen}
           >
-            More ···
+            more ···
           </button>
         </div>
       )}
@@ -565,7 +565,7 @@ function TaskGroupCard({ group, isOpen, onToggle, timeFilter, timeFilterActive, 
 
                   {activeTasks.length === 0 && completedTasks.length === 0 && (
                     <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textAlign: 'center', padding: '0.75rem 0' }}>
-                      No tasks yet.
+                      no tasks yet.
                     </p>
                   )}
                 </>
@@ -697,7 +697,7 @@ export default function Tasks() {
         reading_level: prefs.readingLevel || 'standard',
       })
       if (res.flagged) {
-        setAddMsg({ type: 'error', text: "I can't process that right now. Try rephrasing?" })
+        setAddMsg({ type: 'error', text: "can't process that right now. try rephrasing?" })
         setAddLoading(false)
         return
       }
@@ -812,7 +812,7 @@ export default function Tasks() {
         <input
           ref={addInputRef}
           type="text"
-          placeholder="Add a task or goal..."
+          placeholder="add a task or goal..."
           value={addInput}
           onChange={e => setAddInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
@@ -828,7 +828,7 @@ export default function Tasks() {
           onClick={handleAdd}
           disabled={!addInput.trim() || addLoading}
         >
-          {addLoading ? '…' : 'Add'}
+          {addLoading ? '…' : 'add'}
         </button>
       </motion.div>
 
@@ -935,7 +935,7 @@ export default function Tasks() {
           >
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--color-paused)', flexShrink: 0 }} />
             <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              Paused · {pausedAll.length} task{pausedAll.length !== 1 ? 's' : ''}
+              paused · {pausedAll.length} task{pausedAll.length !== 1 ? 's' : ''}
             </span>
             <motion.span
               animate={{ rotate: pausedOpen ? 90 : 0 }}
@@ -967,7 +967,7 @@ export default function Tasks() {
                           style={{ fontSize: '0.78rem', padding: '0.2rem 0.65rem', color: 'var(--color-active)', borderColor: 'var(--color-active)' }}
                           onClick={() => dispatch(tasksActions.resumeTask({ groupId: parentGroup?.id, taskId: t.id }))}
                         >
-                          Resume
+                          resume
                         </button>
                       </div>
                     )
@@ -979,8 +979,8 @@ export default function Tasks() {
         </motion.div>
       )}
 
-      {/* ── Pebble chat — hidden until fully functional ──────────────── */}
-      {false && groups.length > 0 && (
+      {/* ── Pebble chat ──────────────────────────────────────────────── */}
+      {groups.length > 0 && (
         <motion.div
           ref={qaChatRef}
           initial={{ opacity: 0 }}
@@ -1028,18 +1028,20 @@ export default function Tasks() {
                 {/* Bubble */}
                 <div style={{
                   maxWidth: '80%',
-                  background: msg.role === 'assistant' ? 'var(--bg-card)' : 'rgba(42,122,144,0.08)',
-                  border: `1px solid ${msg.role === 'assistant' ? 'var(--border)' : 'rgba(42,122,144,0.16)'}`,
-                  borderRadius: msg.role === 'assistant' ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
+                  background: msg.role === 'assistant' ? 'rgba(200,148,80,0.07)' : 'rgba(42,122,144,0.08)',
+                  border: `1px solid ${msg.role === 'assistant' ? 'rgba(200,148,80,0.16)' : 'rgba(42,122,144,0.16)'}`,
+                  borderRadius: msg.role === 'assistant' ? '18px 18px 18px 4px' : '18px 18px 4px 18px',
                   padding: '0.75rem 1rem',
                   fontSize: '0.88rem',
                   color: 'var(--text-primary)',
                   lineHeight: 1.65,
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
-                  boxShadow: msg.role === 'assistant' ? '0 2px 10px rgba(90,138,128,0.06)' : 'none',
+                  boxShadow: msg.role === 'assistant' ? '0 3px 14px rgba(200,148,80,0.07)' : '0 2px 10px rgba(42,122,144,0.05)',
                 }}>
-                  {msg.content}
+                  {msg.role === 'assistant'
+                    ? msg.content.replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').replace(/^#+\s+/gm,'').replace(/^[-*]\s+/gm,'')
+                    : msg.content}
                 </div>
               </motion.div>
             ))}
@@ -1058,10 +1060,10 @@ export default function Tasks() {
                   style={{ width: 8, height: 8, borderRadius: '50%', background: '#5A8A80', flexShrink: 0, marginTop: '0.9rem' }}
                 />
                 <div style={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderRadius: '16px 16px 16px 4px', padding: '0.75rem 1rem',
+                  background: 'rgba(200,148,80,0.07)', border: '1px solid rgba(200,148,80,0.16)',
+                  borderRadius: '18px 18px 18px 4px', padding: '0.75rem 1rem',
                   fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.65,
-                  maxWidth: '80%', boxShadow: '0 2px 10px rgba(90,138,128,0.06)',
+                  maxWidth: '80%', boxShadow: '0 3px 14px rgba(200,148,80,0.07)',
                 }}>
                   {qaStream
                     ? qaStream

@@ -2,10 +2,10 @@ import { NavLink, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 const NAV_ITEMS = [
-  { to: '/',          label: 'Home',      end: true,  dataNav: null         },
-  { to: '/documents', label: 'Documents', end: false, dataNav: 'documents'  },
-  { to: '/tasks',     label: 'Tasks',     end: false, dataNav: 'tasks'      },
-  { to: '/focus',     label: 'Focus',     end: false, dataNav: 'focus'      },
+  { to: '/',          label: 'home',      end: true,  dataNav: null         },
+  { to: '/documents', label: 'documents', end: false, dataNav: 'documents'  },
+  { to: '/tasks',     label: 'tasks',     end: false, dataNav: 'tasks'      },
+  { to: '/focus',     label: 'focus',     end: false, dataNav: 'focus'      },
 ]
 
 export default function TopNav() {

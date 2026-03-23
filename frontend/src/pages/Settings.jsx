@@ -21,18 +21,18 @@ const staggerItem = {
 }
 
 const FONTS = [
-  { label: 'Default',           value: 'default',      css: 'var(--font-body)' },
+  { label: 'default',           value: 'default',      css: 'var(--font-body)' },
   { label: 'Lexend',            value: 'lexend',        css: '"Lexend", sans-serif' },
   { label: 'Atkinson',          value: 'atkinson',      css: '"Atkinson Hyperlegible", sans-serif' },
   { label: 'OpenDyslexic',      value: 'opendyslexic',  css: '"OpenDyslexic", sans-serif' },
 ]
 
 const THEMES = [
-  { label: 'Calm (auto)',  value: 'calm' },
-  { label: 'Morning',     value: 'morning' },
-  { label: 'Afternoon',   value: 'afternoon' },
-  { label: 'Evening',     value: 'evening' },
-  { label: 'Night',       value: 'night' },
+  { label: 'calm (auto)',  value: 'calm' },
+  { label: 'morning',     value: 'morning' },
+  { label: 'afternoon',   value: 'afternoon' },
+  { label: 'evening',     value: 'evening' },
+  { label: 'night',       value: 'night' },
 ]
 
 const TIMERS = [
@@ -43,21 +43,21 @@ const TIMERS = [
 ]
 
 const COMM_STYLES = [
-  { label: 'Warm',      value: 'warm',     sub: 'Like a deep breath' },
-  { label: 'Direct',    value: 'direct',   sub: 'Calm and to the point' },
-  { label: 'Balanced',  value: 'balanced', sub: 'A little of each' },
+  { label: 'warm',      value: 'warm',     sub: 'like a deep breath' },
+  { label: 'direct',    value: 'direct',   sub: 'calm and to the point' },
+  { label: 'balanced',  value: 'balanced', sub: 'a little of each' },
 ]
 
 const READING_LEVELS = [
-  { label: 'Short and clear', value: 'simple',   sub: 'Just the essentials' },
-  { label: 'Balanced',        value: 'standard', sub: 'Enough detail, nothing extra' },
-  { label: 'Full picture',    value: 'detailed', sub: 'I like having everything' },
+  { label: 'short and clear', value: 'simple',   sub: 'just the essentials' },
+  { label: 'balanced',        value: 'standard', sub: 'enough detail, nothing extra' },
+  { label: 'full picture',    value: 'detailed', sub: 'i like having everything' },
 ]
 
 const GRANULARITIES = [
-  { label: 'Step by step', value: 'micro',  sub: 'The smaller, the better' },
-  { label: 'Clear plan',   value: 'normal', sub: 'Not too detailed, not too vague' },
-  { label: 'Big picture',  value: 'broad',  sub: "I'll figure out the rest" },
+  { label: 'step by step', value: 'micro',  sub: 'the smaller, the better' },
+  { label: 'clear plan',   value: 'normal', sub: 'not too detailed, not too vague' },
+  { label: 'big picture',  value: 'broad',  sub: "i'll figure out the rest" },
 ]
 
 async function persist(updates) {
@@ -132,16 +132,16 @@ export default function Settings() {
             settings.
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem' }}>
-            adjust how Pebble looks and feels — changes apply instantly.
+            adjust how pebble looks and feels — changes apply instantly.
           </p>
         </motion.div>
 
         {/* Reading & Display */}
         <motion.div variants={staggerItem} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Reading & Display</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>reading & display</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Font</label>
+            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>font</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {FONTS.map(f => (
                 <button
@@ -157,7 +157,7 @@ export default function Settings() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Theme</label>
+            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>theme</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {THEMES.map(t => (
                 <button
@@ -175,9 +175,9 @@ export default function Settings() {
 
         {/* Focus & Timer */}
         <motion.div variants={staggerItem} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Focus & Timer</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>focus & timer</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Default timer length</label>
+            <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>default timer length</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {TIMERS.map(t => (
                 <button
@@ -195,12 +195,12 @@ export default function Settings() {
 
         {/* Communication & AI */}
         <motion.div variants={staggerItem} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Communication & AI</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)' }}>communication & ai</h3>
 
           {/* Communication style */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              What does helpful sound like?
+              what does helpful sound like?
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {COMM_STYLES.map(c => (
@@ -227,7 +227,7 @@ export default function Settings() {
           {/* Reading level */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              How much detail do you want in explanations?
+              how much detail do you want in explanations?
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {READING_LEVELS.map(r => (
@@ -254,7 +254,7 @@ export default function Settings() {
           {/* Task granularity */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              When I break tasks down, how detailed should they be?
+              when i break tasks down, how detailed should they be?
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               {GRANULARITIES.map(g => (

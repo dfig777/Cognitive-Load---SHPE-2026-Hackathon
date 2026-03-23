@@ -14,7 +14,7 @@ class UserPreferences(BaseModel):
     timer_length_minutes: int = Field(default=25, ge=5, le=60)
     focus_mode: bool = False
     granularity: Literal["micro", "normal", "broad"] = "normal"
-    color_theme: Literal["calm", "dark", "high-contrast"] = "calm"
+    color_theme: Literal["calm", "morning", "afternoon", "evening", "night"] = "calm"
     # Session 5: identity + onboarding
     name: str = Field(default="there", max_length=100)
     communication_style: Literal["warm", "direct", "balanced"] = "balanced"
@@ -93,14 +93,18 @@ class DocumentItem(BaseModel):
 # ── Sessions ─────────────────────────────────────────────────────────────── #
 
 class SessionCreate(BaseModel):
-    goal: str = Field(..., max_length=500)
-    steps: list[TaskStep] = Field(..., max_length=50)
+    tasks_completed: int = Field(default=0, ge=0)
+    tasks_skipped: int = Field(default=0, ge=0)
+    total_minutes: int = Field(default=0, ge=0)
+    group_name: str = Field(default="Focus Session", max_length=200)
 
 
 class SessionItem(BaseModel):
     id: str
-    goal: str
-    steps: list[TaskStep]
+    tasks_completed: int = 0
+    tasks_skipped: int = 0
+    total_minutes: int = 0
+    group_name: str = "Focus Session"
     created_at: str
 
 

@@ -18,9 +18,9 @@ const ACCEPTED_MIME = new Set([
 const MAX_BYTES = 20 * 1024 * 1024
 
 const CHOICES = [
-  { id: 'actions',    dot: 'var(--color-active)',   title: 'Pull out what I need to do',      sub: 'Action items and deadlines, nothing extra' },
-  { id: 'simplify',   dot: 'var(--color-done)',     title: 'Make it easier to read',          sub: 'Simplify the language and shorten it' },
-  { id: 'highlights', dot: 'var(--color-upcoming)', title: 'Show me what matters most',       sub: 'Highlight the key sections to focus on' },
+  { id: 'actions',    dot: 'var(--color-active)',   title: 'pull out what I need to do',      sub: 'action items and deadlines, nothing extra' },
+  { id: 'simplify',   dot: 'var(--color-done)',     title: 'make it easier to read',          sub: 'simplify the language and shorten it' },
+  { id: 'highlights', dot: 'var(--color-upcoming)', title: 'show me what matters most',       sub: 'highlight the key sections to focus on' },
   { id: 'auto',       dot: 'var(--color-paused)',   title: "not sure — you decide",           sub: "i'll figure out the best way to help" },
 ]
 
@@ -150,7 +150,7 @@ function SentenceTooltip({ text }) {
           {loading
             ? 'thinking…'
             : tip
-              ? <><strong>Why simplified:</strong> {tip.reason}<br /><em>{tip.simplified}</em></>
+              ? <><strong>why simplified:</strong> {tip.reason}<br /><em>{tip.simplified}</em></>
               : null}
         </span>
       )}
@@ -236,8 +236,8 @@ export default function Documents() {
   // Shared document data (set after "Go")
   const [docText, setDocText] = useState('')
   const [docName, setDocName] = useState('')
-  const [pageCount, setPageCount] = useState(null)
   const [aiDesc, setAiDesc] = useState('')
+  const [aiGroupName, setAiGroupName] = useState('')  // AI-generated group name from decompose
 
   // Results
   const [chosenMode, setChosenMode] = useState(null)
@@ -273,8 +273,8 @@ export default function Documents() {
   // ── File validation ──────────────────────────────────────────────────── //
 
   function validateFile(f) {
-    if (!ACCEPTED_MIME.has(f.type)) return "I can work with PDFs, Word docs, and images. Try one of those?"
-    if (f.size > MAX_BYTES) return "That file is a bit large. Try one under 20MB?"
+    if (!ACCEPTED_MIME.has(f.type)) return "i can work with PDFs, Word docs, and images. try one of those?"
+    if (f.size > MAX_BYTES) return "that file is a bit large. try one under 20MB?"
     return null
   }
 
@@ -308,7 +308,7 @@ export default function Documents() {
       if (file) {
         const res = await uploadDocument(file)
         if (res.flagged) {
-          setFileError(res.message || "This content couldn't be processed right now.")
+          setFileError(res.message || "this content couldn't be processed right now.")
           setIsLoading(false)
           return
         }
@@ -318,7 +318,6 @@ export default function Documents() {
         const detectedType = detectDocType(text, file.name)
         setDocType(detectedType)
         setDocText(text)
-        setPageCount(pages)
         setInputPreview(file.name)
         setAiDesc(buildAiDesc(detectedType, ext, pages, 0, true))
         // Refresh saved docs list after upload
@@ -364,12 +363,13 @@ export default function Documents() {
           reading_level: prefs.readingLevel || 'standard',
         })
         if (res.flagged) {
-          setStreamError("This content couldn't be processed. Try pasting a different section.")
+          setStreamError("this content couldn't be processed. try pasting a different section.")
           return
         }
         setActionItems(res.steps || [])
+        setAiGroupName(res.group_name || '')
       } catch {
-        setStreamError("Something went quiet. Here's what I could find so far.")
+        setStreamError("something went quiet. here's what i could find so far.")
       }
     } else {
       // 'simplify' — stream the simplified text
@@ -388,7 +388,8 @@ export default function Documents() {
   async function handleTurnIntoTasks() {
     const fallbackName = docName || 'Document'
     if (actionItems.length > 0) {
-      dispatch(tasksActions.addGroup({ name: fallbackName, source: 'document', tasks: actionItems }))
+      const groupName = aiGroupName || fallbackName
+      dispatch(tasksActions.addGroup({ name: groupName, source: 'document', tasks: actionItems }))
       navigate('/tasks')
       return
     }
@@ -424,7 +425,7 @@ export default function Documents() {
     setQaStreaming(true)
 
     await chatStream(
-      { message: messageWithContext, page: 'documents', conversation_history: history },
+      { message: messageWithContext, current_page: 'documents', conversation_history: history },
       {
         onToken: chunk => setQaMessages(prev => {
           const msgs = [...prev]
@@ -479,10 +480,10 @@ export default function Documents() {
               {/* Heading */}
               <motion.div variants={staggerItem} style={{ textAlign: 'center' }}>
                 <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', color: 'var(--text-primary)', marginBottom: '0.4rem' }}>
-                  Share what's overwhelming you.
+                  share what's overwhelming you.
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
-                  We'll make it make sense.
+                  we'll make it make sense.
                 </p>
               </motion.div>
 
@@ -512,7 +513,7 @@ export default function Documents() {
                   </div>
                 ) : (
                   <textarea
-                    placeholder="Paste text, drop a file, or describe what you need help with..."
+                    placeholder="paste text, drop a file, or describe what you need help with..."
                     rows={9}
                     value={inputText}
                     onChange={e => setInputText(e.target.value)}
@@ -556,7 +557,7 @@ export default function Documents() {
                     onClick={handleGo}
                     aria-label="Process document"
                   >
-                    {isLoading ? 'Reading…' : 'Go'}
+                    {isLoading ? 'reading…' : 'go'}
                   </button>
                 </div>
               </motion.div>
@@ -751,7 +752,7 @@ export default function Documents() {
                           onClick={() => setBionicMode(b => !b)}
                           aria-pressed={bionicMode}
                         >
-                          {bionicMode ? 'Normal reading' : 'Bionic reading'}
+                          {bionicMode ? 'normal reading' : 'bionic reading'}
                         </button>
                       </div>
                       <div
@@ -856,7 +857,7 @@ export default function Documents() {
                 >
                   <input
                     type="text"
-                    placeholder="Ask anything about this document..."
+                    placeholder="ask anything about this document..."
                     value={qaInput}
                     onChange={e => setQaInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleQaSubmit()}
@@ -869,7 +870,7 @@ export default function Documents() {
                     disabled={!qaInput.trim() || qaStreaming}
                     onClick={handleQaSubmit}
                   >
-                    Ask
+                    ask
                   </button>
                 </motion.div>
               )}
