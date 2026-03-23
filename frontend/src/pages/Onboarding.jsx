@@ -32,10 +32,10 @@ const SHELL_STYLE = {
 // ── Font options ──────────────────────────────────────────────────────── //
 
 const FONTS = [
-  { value: 'default',      label: 'Default',      sub: 'DM Sans — clear and friendly',          css: 'var(--font-body)' },
-  { value: 'lexend',       label: 'Lexend',        sub: 'Easier to read — reduced visual stress', css: '"Lexend", sans-serif' },
-  { value: 'atkinson',     label: 'Atkinson',      sub: 'Maximum clarity',                        css: '"Atkinson Hyperlegible", sans-serif' },
-  { value: 'opendyslexic', label: 'OpenDyslexic',  sub: 'Designed for dyslexia',                  css: '"OpenDyslexic", sans-serif' },
+  { value: 'default',      label: 'default',       sub: 'DM Sans — clear and friendly',          css: 'var(--font-body)' },
+  { value: 'lexend',       label: 'Lexend',         sub: 'easier to read — reduced visual stress', css: '"Lexend", sans-serif' },
+  { value: 'atkinson',     label: 'Atkinson',       sub: 'maximum clarity',                        css: '"Atkinson Hyperlegible", sans-serif' },
+  { value: 'opendyslexic', label: 'OpenDyslexic',   sub: 'designed for dyslexia',                  css: '"OpenDyslexic", sans-serif' },
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────── //
@@ -156,7 +156,7 @@ function SettingsNote() {
   return (
     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.5, transition: { duration: 0.4, delay: 0.55 } }}
       style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
-      You can change any of these anytime in Settings
+      you can change any of these anytime in settings
     </motion.p>
   )
 }
@@ -282,9 +282,9 @@ export default function Onboarding() {
     }
   }
 
-  const handleQ2 = pickChoice({ setValue: setReadingLevel, validValues: ['simple','standard','detailed'], defaultVal: 'standard', nextStage: 'q3', unsureText: "No worries. We'll go with a nice balance for now. You can always change it later." })
-  const handleQ5 = pickChoice({ setValue: setGranularity,  validValues: ['micro','normal','broad'],       defaultVal: 'normal',   nextStage: 'q6', unsureText: "No worries. We'll start with a clear plan. You can always ask for more or less detail." })
-  const handleQ6 = pickChoice({ setValue: setCommStyle,    validValues: ['warm','direct','balanced'],     defaultVal: 'balanced', nextStage: 'complete', unsureText: "No worries. We'll start with a little of each and you can adjust anytime." })
+  const handleQ2 = pickChoice({ setValue: setReadingLevel, validValues: ['simple','standard','detailed'], defaultVal: 'standard', nextStage: 'q3', unsureText: "no worries. we'll go with a nice balance for now. you can always change it later." })
+  const handleQ5 = pickChoice({ setValue: setGranularity,  validValues: ['micro','normal','broad'],       defaultVal: 'normal',   nextStage: 'q6', unsureText: "no worries. we'll start with a clear plan. you can always ask for more or less detail." })
+  const handleQ6 = pickChoice({ setValue: setCommStyle,    validValues: ['warm','direct','balanced'],     defaultVal: 'balanced', nextStage: 'complete', unsureText: "no worries. we'll start with a little of each and you can adjust anytime." })
 
   // ── Stage content ─────────────────────────────────────────────────── //
 
@@ -297,7 +297,7 @@ export default function Onboarding() {
           <>
             <motion.p initial={ENTER} animate={ENTER_T}
               style={{ fontFamily: '"DM Serif Display", Georgia, serif', fontSize: 'clamp(22px, 4vw, 26px)', color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
-              First, who will I be helping?
+              first, who will i be helping?
             </motion.p>
             <motion.form initial={ENTER} animate={{ ...ENTER_T, transition: { ...ENTER_T.transition, delay: 0.18 } }}
               onSubmit={e => { e.preventDefault(); const n = nameInput.trim(); if (n) { setName(n); setStage('confirm-name') } }}
@@ -332,10 +332,10 @@ export default function Onboarding() {
             <motion.div initial={ENTER} animate={{ ...ENTER_T, transition: { ...ENTER_T.transition, delay: 0.15 } }}
               style={{ display: 'flex', gap: '0.75rem' }}>
               <button className="btn btn-primary" style={{ borderRadius: 8 }} onClick={() => setStage('meet')}>
-                That's me
+                that's me
               </button>
               <button className="btn btn-ghost" style={{ borderRadius: 8 }} onClick={() => { setNameInput(name); setStage('name') }}>
-                Let me fix that
+                let me fix that
               </button>
             </motion.div>
           </>
@@ -361,11 +361,11 @@ export default function Onboarding() {
             </motion.p>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left' }}>
               {[
-                { v: 'simple',   l: 'Short and clear',            s: 'Just the essentials.' },
-                { v: 'standard', l: 'A good balance',             s: 'Enough detail, nothing extra.' },
-                { v: 'detailed', l: 'Give me everything',         s: 'I like having the full picture.' },
-                { v: 'describe', l: 'Let me describe what I need', s: null },
-                { v: 'unsure',   l: "I'm not sure yet",           s: null },
+                { v: 'simple',   l: 'short and clear',            s: 'just the essentials.' },
+                { v: 'standard', l: 'a good balance',             s: 'enough detail, nothing extra.' },
+                { v: 'detailed', l: 'give me everything',         s: "i like having the full picture." },
+                { v: 'describe', l: 'let me describe what i need', s: null },
+                { v: 'unsure',   l: "i'm not sure yet",           s: null },
               ].map((c, i) => (
                 <motion.div key={c.v} {...cardAnim(i)}>
                   <ChoiceCard label={c.l} sub={c.s}
@@ -419,9 +419,9 @@ export default function Onboarding() {
             <motion.div initial={ENTER} animate={{ ...ENTER_T, transition: { ...ENTER_T.transition, delay: 0.18 } }}
               style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               {[
-                { v: 'morning', l: 'Warm' },
-                { v: 'night',   l: 'Dark' },
-                { v: 'auto',    l: 'Match the time' },
+                { v: 'morning', l: 'warm' },
+                { v: 'night',   l: 'dark' },
+                { v: 'auto',    l: 'match the time' },
               ].map((t, i) => (
                 <motion.div key={t.v} {...cardAnim(i)}>
                   <ThemePreviewCard label={t.l} themeKey={t.v} selected={themeChoice === t.v}
@@ -447,11 +447,11 @@ export default function Onboarding() {
             </motion.p>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left' }}>
               {[
-                { v: 'micro',   l: 'Walk me through it step by step', s: 'The smaller, the better.' },
-                { v: 'normal',  l: 'Give me a clear plan',            s: 'Not too detailed, not too vague.' },
-                { v: 'broad',   l: 'Just show me the big picture',    s: "I'll figure out the rest." },
-                { v: 'describe',l: 'Let me describe what I need',     s: null },
-                { v: 'unsure',  l: "I'm not sure yet",                s: null },
+                { v: 'micro',   l: 'walk me through it step by step', s: 'the smaller, the better.' },
+                { v: 'normal',  l: 'give me a clear plan',            s: 'not too detailed, not too vague.' },
+                { v: 'broad',   l: 'just show me the big picture',    s: "i'll figure out the rest." },
+                { v: 'describe',l: 'let me describe what i need',     s: null },
+                { v: 'unsure',  l: "i'm not sure yet",                s: null },
               ].map((c, i) => (
                 <motion.div key={c.v} {...cardAnim(i)}>
                   <ChoiceCard label={c.l} sub={c.s}
@@ -481,11 +481,11 @@ export default function Onboarding() {
             </motion.p>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left' }}>
               {[
-                { v: 'warm',    l: 'Like a deep breath',         s: 'Warm and reassuring.' },
-                { v: 'direct',  l: 'Like a clear path',          s: 'Calm and to the point.' },
-                { v: 'balanced',l: 'A little of each',           s: null },
-                { v: 'describe',l: 'Let me describe what works', s: null },
-                { v: 'unsure',  l: "I'll figure it out as I go", s: null },
+                { v: 'warm',    l: 'like a deep breath',         s: 'warm and reassuring.' },
+                { v: 'direct',  l: 'like a clear path',          s: 'calm and to the point.' },
+                { v: 'balanced',l: 'a little of each',           s: null },
+                { v: 'describe',l: 'let me describe what works', s: null },
+                { v: 'unsure',  l: "i'll figure it out as i go", s: null },
               ].map((c, i) => (
                 <motion.div key={c.v} {...cardAnim(i)}>
                   <ChoiceCard label={c.l} sub={c.s}

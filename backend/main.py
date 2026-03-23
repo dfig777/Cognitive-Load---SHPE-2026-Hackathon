@@ -216,7 +216,7 @@ def make_app(settings: Settings | None = None) -> FastAPI:
             result = await ai.explain_simplification(req.sentence)
             response = ExplainResponse(**result)
         except Exception as exc:
-            raise HTTPException(status_code=502, detail="Could not generate explanation.") from exc
+            raise HTTPException(status_code=502, detail="couldn't generate an explanation — please try again.") from exc
 
         await safety.screen_output(f"{response.reason} {response.simplified}")
         return response
@@ -233,7 +233,7 @@ def make_app(settings: Settings | None = None) -> FastAPI:
         try:
             msg = await ai.contextual_nudge(req.task_name, req.elapsed_minutes)
         except Exception as exc:
-            raise HTTPException(status_code=502, detail="Could not generate nudge.") from exc
+            raise HTTPException(status_code=502, detail="couldn't generate a nudge — please try again.") from exc
 
         await safety.screen_output(msg)
         return NudgeResponse(message=msg)

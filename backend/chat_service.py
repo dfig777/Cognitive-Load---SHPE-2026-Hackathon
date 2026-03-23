@@ -36,24 +36,24 @@ _ACTIONS_RE = re.compile(r"###ACTIONS(\[.*?\])###", re.DOTALL)
 
 _HARD_BLOCK = {
     "SelfHarm": (
-        "That sounds really heavy. I'm not the right kind of help for what you're "
-        "going through right now. But there are people who are. "
-        "Want me to share some ways to reach them?"
+        "that sounds really heavy. i'm not the right kind of help for what you're "
+        "going through right now. but there are people who are. "
+        "want me to share some ways to reach them?"
     ),
     "Violence": (
-        "I want to help, but this is outside what I can do. I'm best with documents, "
-        "tasks, and making things feel smaller. Want to try something like that?"
+        "i want to help, but this is outside what i can do. i'm best with documents, "
+        "tasks, and making things feel smaller. want to try something like that?"
     ),
     "Sexual": (
-        "That's not something I can help with. "
-        "I work best with documents and tasks. Want to try one of those?"
+        "that's not something i can help with. "
+        "i work best with documents and tasks. want to try one of those?"
     ),
     "Hate": (
-        "I'm here to help with work that feels overwhelming. Want to try that instead?"
+        "i'm here to help with work that feels overwhelming. want to try that instead?"
     ),
     "_default": (
-        "I want to help, but this is outside what I can do. "
-        "I'm best with documents, tasks, and making things feel smaller."
+        "i want to help, but this is outside what i can do. "
+        "i'm best with documents, tasks, and making things feel smaller."
     ),
 }
 
