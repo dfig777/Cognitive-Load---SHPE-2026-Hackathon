@@ -977,7 +977,7 @@ export default function FocusMode() {
 
   // ── No tasks: show standalone timer ──────────────────────────────────── //
 
-  if (!group || groupTasks.length === 0) {
+  if (!group || groupTasks.length === 0 || startBreak) {
     return <StandaloneFocus startBreak={startBreak} />
   }
 

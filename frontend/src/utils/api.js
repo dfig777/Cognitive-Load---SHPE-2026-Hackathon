@@ -44,7 +44,7 @@ export async function summariseStream(payload, onChunk, onDone, onError) {
     headers: DEFAULT_HEADERS,
     body: JSON.stringify(payload),
   })
-  if (!res.ok) { onError('Something went quiet — please try again.'); return }
+  if (!res.ok) { onError('something went quiet — please try again.'); return }
 
   // Content Safety can return plain JSON {flagged: true, message: "..."} at 200
   // instead of SSE — detect and handle before entering the stream loop
@@ -52,9 +52,9 @@ export async function summariseStream(payload, onChunk, onDone, onError) {
   if (!contentType.includes('text/event-stream')) {
     const json = await res.json().catch(() => null)
     if (json?.flagged) {
-      onError(json.message || 'This content couldn\'t be processed right now.')
+      onError(json.message || "this content couldn't be processed right now.")
     } else {
-      onError('Something went quiet — please try again.')
+      onError('something went quiet — please try again.')
     }
     return
   }
@@ -123,13 +123,13 @@ export async function chatStream(payload, { onToken, onActions, onReplace, onDon
       body: JSON.stringify(payload),
     })
   } catch {
-    onError?.('Something went quiet — please try again.')
+    onError?.('something went quiet — please try again.')
     return
   }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }))
-    onError?.(err.detail || 'Something went quiet — please try again.')
+    onError?.(err.detail || 'something went quiet — please try again.')
     return
   }
 
@@ -158,7 +158,7 @@ export async function chatStream(payload, { onToken, onActions, onReplace, onDon
       }
     }
   } catch {
-    onError?.('Something went quiet — please try again.')
+    onError?.('something went quiet — please try again.')
     return
   }
   onDone?.()

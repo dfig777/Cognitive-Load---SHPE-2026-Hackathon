@@ -25,9 +25,9 @@ class UserPreferences(BaseModel):
 # ── Task Decomposer ──────────────────────────────────────────────────────── #
 
 class DecomposeRequest(BaseModel):
-    goal: str = Field(..., min_length=3, max_length=500)
+    goal: str = Field(..., min_length=3, max_length=4_000)
     granularity: Literal["micro", "normal", "broad"] = "normal"
-    context: str = Field(default="", max_length=500)
+    context: str = Field(default="", max_length=2_000)
 
 
 class TaskStep(BaseModel):
